@@ -9,25 +9,21 @@ jobs:
   build-and-deploy:
     runs-on: windows-latest
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout the repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 20 # Use a stable Node.js version
+          node-version: 20
           cache: 'npm'
 
-      # Step 3: Install dependencies and build the project
       - name: Install dependencies and build
         run: |
-          if exist dist rd /s /q dist # Clean the old dist folder on Windows
+          if (Test-Path dist) { Remove-Item -Recurse -Force dist }
           npm install
           npm run build
 
-      # Step 4: Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
