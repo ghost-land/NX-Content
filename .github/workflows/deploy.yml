@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
@@ -16,9 +16,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 22
-
-      - name: Disable npm scripts
-        run: npm config set ignore-scripts true
 
       - name: Install dependencies and build
         run: |
