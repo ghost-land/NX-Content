@@ -35,11 +35,6 @@ function ContentList({ items, maxVisible = 5, type }: ContentListProps) {
               Size: {formatFileSize(item.size)}
             </p>
           )}
-          {item.releaseDate && (
-            <p className="text-xs text-muted-foreground">
-              Released: {formatDate(item.releaseDate)}
-            </p>
-          )}
         </div>
       ))}
       {hasMore && (

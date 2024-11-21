@@ -3,39 +3,39 @@
 @tailwind utilities;
 
 :root {
+  color-scheme: light;
   --background: 255 255 255;
   --foreground: 15 23 42;
-  
   --muted: 241 245 249;
   --muted-foreground: 100 116 139;
-  
   --card: 255 255 255;
   --card-foreground: 15 23 42;
-  
   --border: 226 232 240;
-  
   --primary: 37 99 235;
   --primary-foreground: 255 255 255;
 }
 
 :root[class~="dark"] {
+  color-scheme: dark;
   --background: 15 23 42;
   --foreground: 226 232 240;
-  
   --muted: 30 41 59;
   --muted-foreground: 148 163 184;
-  
   --card: 30 41 59;
   --card-foreground: 226 232 240;
-  
   --border: 51 65 85;
-  
   --primary: 59 130 246;
   --primary-foreground: 255 255 255;
 }
 
-body {
-  @apply antialiased bg-background text-foreground;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
 }
 
 .icon-container {
@@ -45,4 +45,63 @@ body {
 .icon-container img {
   @apply absolute inset-0 w-full h-full object-cover rounded-lg;
   aspect-ratio: 1/1;
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .icon-container {
+    @apply w-12 h-12;
+  }
+
+  .content-table th,
+  .content-table td {
+    @apply px-2 py-2 text-sm;
+  }
+
+  .content-table th:not(:first-child):not(:last-child),
+  .content-table td:not(:first-child):not(:last-child) {
+    @apply hidden;
+  }
+
+  .pagination-controls {
+    @apply flex-col space-y-2;
+  }
+
+  .pagination-controls select {
+    @apply w-full;
+  }
+
+  .search-bar {
+    @apply flex-col space-y-2;
+  }
+
+  .search-bar input {
+    @apply w-full;
+  }
+
+  .stats-grid {
+    @apply grid-cols-1 gap-2;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .icon-container {
+    @apply w-14 h-14;
+  }
+
+  .content-table th,
+  .content-table td {
+    @apply px-3 py-3;
+  }
+
+  .stats-grid {
+    @apply grid-cols-2 gap-3;
+  }
+}
+
+/* Ensure content is always visible */
+.overflow-container {
+  @apply overflow-x-auto -mx-4 px-4;
+  -webkit-overflow-scrolling: touch;
 }

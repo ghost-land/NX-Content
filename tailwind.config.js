@@ -18,6 +18,12 @@ export default {
         primary: 'rgb(var(--primary) / <alpha-value>)',
         'primary-foreground': 'rgb(var(--primary-foreground) / <alpha-value>)',
       },
+      screens: {
+        'xs': '475px',
+      },
+      maxWidth: {
+        '8xl': '88rem',
+      },
     },
   },
   plugins: [],

@@ -1,7 +1,7 @@
 {
   "name": "nx-working",
   "private": true,
-  "version": "1.0.0",
+  "version": "3.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@rollup/rollup-win32-x64-msvc": "^4.27.3",
     "clsx": "^2.1.0",
     "fuse.js": "^7.0.0",
     "lucide-react": "^0.344.0",

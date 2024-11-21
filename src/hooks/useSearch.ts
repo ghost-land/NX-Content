@@ -1,129 +1,82 @@
 import { useMemo, useState, useCallback } from 'react';
 import Fuse from 'fuse.js';
-import { ContentItem, SearchOptions, SortField, SortDirection } from '../types';
+import { ContentItem, SortField, SortDirection } from '../types';
 import { useUserPreferences } from '../store/userPreferences';
+import { sortItems } from '../utils/sorting';
 
-const getSearchOptions = (precision: number): SearchOptions => ({
-  threshold: precision,
-  distance: Math.floor(100 * (1 + precision)),
-  minMatchCharLength: Math.max(2, Math.floor(4 * (1 - precision))),
-});
-
-function parseDate(dateStr: string | undefined): number {
-  if (!dateStr) return 0;
-  try {
-    const date = new Date(dateStr);
-    return isNaN(date.getTime()) ? 0 : date.getTime();
-  } catch {
-    return 0;
-  }
-}
-
-function sortItems(items: ContentItem[], field: SortField, direction: SortDirection): ContentItem[] {
-  return [...items].sort((a, b) => {
-    let comparison = 0;
-    
-    switch (field) {
-      case 'id':
-        comparison = (a.id || '').localeCompare(b.id || '');
-        break;
-        
-      case 'name': {
-        const nameA = a.name || 'Unknown Title';
-        const nameB = b.name || 'Unknown Title';
-        
-        // Always put Unknown at the end regardless of sort direction
-        if (nameA === 'Unknown Title' && nameB !== 'Unknown Title') return 1;
-        if (nameB === 'Unknown Title' && nameA !== 'Unknown Title') return -1;
-        
-        comparison = nameA.localeCompare(nameB);
-        break;
-      }
-        
-      case 'releaseDate': {
-        const dateA = parseDate(a.releaseDate);
-        const dateB = parseDate(b.releaseDate);
-        
-        // Always put items without dates at the end
-        if (!dateA && !dateB) return 0;
-        if (!dateA) return 1;
-        if (!dateB) return 1;
-        
-        // Sort by date
-        if (dateA !== dateB) {
-          comparison = dateA - dateB;
-        } else {
-          // If dates are equal, sort by name as secondary criteria
-          const nameA = a.name || 'Unknown Title';
-          const nameB = b.name || 'Unknown Title';
-          comparison = nameA.localeCompare(nameB);
-        }
-        break;
-      }
-        
-      case 'size': {
-        const sizeA = a.size || 0;
-        const sizeB = b.size || 0;
-        
-        // Always put items without size at the end
-        if (sizeA === 0 && sizeB !== 0) return 1;
-        if (sizeB === 0 && sizeA !== 0) return -1;
-        
-        comparison = sizeA - sizeB;
-        break;
-      }
-    }
-
-    return direction === 'asc' ? comparison : -comparison;
-  });
+function getSearchOptions(precision: number) {
+  return {
+    threshold: Math.max(0.1, 1 - precision), // Invert precision for better control
+    distance: Math.floor(30 * (1 - precision)),
+    minMatchCharLength: Math.max(2, Math.floor(4 * precision)),
+    location: 0,
+    ignoreLocation: false,
+    findAllMatches: true,
+    includeMatches: true,
+    useExtendedSearch: false,
+    isCaseSensitive: false,
+    tokenize: true,
+    matchAllTokens: false,
+  };
 }
 
 export function useSearch(items: ContentItem[]) {
-  const [query, setQuery] = useState('');
-  const [sortField, setSortField] = useState<SortField>('releaseDate');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const { searchPrecision } = useUserPreferences();
-  
-  const searchOptions = useMemo(() => getSearchOptions(searchPrecision), [searchPrecision]);
-  
+  const [nameQuery, setNameQuery] = useState('');
+  const [tidQuery, setTidQuery] = useState('');
+  const [sortField, setSortField] = useState<SortField>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const { namePrecision } = useUserPreferences();
+
   const fuse = useMemo(() => new Fuse(items, {
-    keys: [
-      { name: 'id', weight: 2 },
-      { name: 'name', weight: 1 }
-    ],
-    ...searchOptions,
-    shouldSort: false,
-    includeScore: true,
-    ignoreLocation: true,
-    useExtendedSearch: true,
-    getFn: (obj, path) => {
-      const value = obj[path as keyof ContentItem];
-      return value?.toString() || '';
+    keys: ['name'],
+    ...getSearchOptions(namePrecision)
+  }), [items, namePrecision]);
+
+  const search = useCallback(() => {
+    let results = items;
+
+    // Apply TID filter (exact match, case-insensitive)
+    if (tidQuery) {
+      const normalizedTid = tidQuery.toLowerCase();
+      results = results.filter(item => 
+        item.id.toLowerCase().includes(normalizedTid)
+      );
     }
-  }), [items, searchOptions]);
-  
-  const search = useCallback((searchQuery: string) => {
-    if (!searchQuery) return items;
-    return fuse.search(searchQuery).map(result => result.item);
-  }, [fuse, items]);
+
+    // Apply name filter
+    if (nameQuery.trim()) {
+      const fuseResults = fuse.search(nameQuery);
+      const matchedItems = fuseResults.map(result => result.item);
+      
+      // If we already filtered by TID, intersect the results
+      if (tidQuery) {
+        const matchedIds = new Set(matchedItems.map(item => item.id));
+        results = results.filter(item => matchedIds.has(item.id));
+      } else {
+        results = matchedItems;
+      }
+    }
+
+    return results;
+  }, [fuse, items, nameQuery, tidQuery]);
 
   const toggleSort = useCallback((field: SortField) => {
-    if (field === sortField) {
-      setSortDirection(current => current === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('desc');
-    }
+    setSortField(field);
+    setSortDirection(current => 
+      field === sortField ? (current === 'asc' ? 'desc' : 'asc') : 'asc'
+    );
   }, [sortField]);
 
   const results = useMemo(() => {
-    const searchResults = search(query);
+    const searchResults = search();
     return sortItems(searchResults, sortField, sortDirection);
-  }, [search, query, sortField, sortDirection]);
+  }, [search, sortField, sortDirection]);
 
   return {
-    query,
-    setQuery,
+    nameQuery,
+    setNameQuery,
+    tidQuery,
+    setTidQuery,
     results,
     sortField,
     sortDirection,

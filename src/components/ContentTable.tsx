@@ -52,36 +52,43 @@ export function ContentTable({
     );
   };
 
-  const renderSortHeader = (field: SortField, label: string) => (
-    <th className="px-6 py-3 text-left">
-      <button
-        onClick={() => onSort(field)}
-        className="flex items-center space-x-2 group w-full"
-      >
-        <span className={`
-          text-xs font-medium uppercase tracking-wider
-          ${sortField === field ? 'text-primary' : 'text-muted-foreground'}
-          group-hover:text-primary transition-colors
-        `}>
-          {label}
-        </span>
-        <span className={`
-          transition-all duration-200
-          ${sortField === field ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}
-        `}>
-          {sortField === field ? (
-            sortDirection === 'asc' ? (
-              <ArrowUp className="h-4 w-4" />
-            ) : (
-              <ArrowDown className="h-4 w-4" />
-            )
-          ) : (
-            <ArrowUp className="h-4 w-4" />
-          )}
-        </span>
-      </button>
-    </th>
-  );
+  const renderSortHeader = (field: SortField, label: string, showForType?: 'base' | 'update' | 'dlc') => {
+    // Si showForType est spécifié et que tous les éléments ne sont pas de ce type, masquer la colonne
+    const shouldShow = !showForType || items.every(item => item.type === showForType);
+    if (!shouldShow) return null;
+
+    return (
+      <th className="px-6 py-3 text-left">
+        <button
+          onClick={() => onSort(field)}
+          className="flex items-center space-x-2 group w-full"
+        >
+          <span className={`
+            text-xs font-medium uppercase tracking-wider
+            ${sortField === field ? 'text-primary' : 'text-muted-foreground'}
+            group-hover:text-primary transition-colors
+          `}>
+            {label}
+          </span>
+          <span className={`
+            transition-all duration-200
+            ${sortField === field ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}
+          `}>
+            {sortField === field && (
+              sortDirection === 'asc' ? (
+                <ArrowUp className="h-4 w-4" />
+              ) : (
+                <ArrowDown className="h-4 w-4" />
+              )
+            )}
+          </span>
+        </button>
+      </th>
+    );
+  };
+
+  // Vérifier si nous affichons des jeux de base
+  const showingBaseGames = items.length > 0 && items[0].type === 'base';
 
   return (
     <div className="bg-card rounded-lg shadow-lg overflow-hidden border border-border">
@@ -95,7 +102,7 @@ export function ContentTable({
               {renderSortHeader('id', 'Title ID')}
               {renderSortHeader('name', 'Name')}
               {renderSortHeader('size', 'Size')}
-              {renderSortHeader('releaseDate', 'Release Date')}
+              {showingBaseGames && renderSortHeader('releaseDate', 'Release Date', 'base')}
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Related Content
               </th>
@@ -105,7 +112,7 @@ export function ContentTable({
           <tbody className="divide-y divide-border">
             {items.map((item) => (
               <tr 
-                key={`${item.id}_${item.version}`} 
+                key={item.uniqueId}
                 onClick={() => handleDetails(item.id)}
                 className="group hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer"
               >
@@ -142,11 +149,13 @@ export function ContentTable({
                     {formatFileSize(item.size)}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-muted-foreground">
-                    {formatDate(item.releaseDate)}
-                  </div>
-                </td>
+                {showingBaseGames && (
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-muted-foreground">
+                      {formatDate(item.releaseDate)}
+                    </div>
+                  </td>
+                )}
                 <td className="px-6 py-4 whitespace-nowrap">
                   {getContentBadges(item.id)}
                 </td>

@@ -19,12 +19,16 @@ export function formatFileSize(bytes?: number): string {
   return `${size.toFixed(2)} ${units[unitIndex]}`;
 }
 
-export function formatDate(dateString?: string): string {
-  if (!dateString) return 'Unknown';
+export function formatDate(dateStr?: string): string {
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+    return 'Unknown';
+  }
   
   try {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return 'Unknown';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      return 'Unknown';
+    }
     
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
