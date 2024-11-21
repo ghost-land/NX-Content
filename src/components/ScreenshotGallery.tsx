@@ -7,11 +7,11 @@ interface ScreenshotGalleryProps {
 
 export function ScreenshotGallery({ screenshots }: ScreenshotGalleryProps) {
   return (
-    <div className="space-y-4">
-      <h3 className="text-sm font-medium text-foreground mb-3">Screenshots</h3>
+    <div className="space-y-3 sm:space-y-4">
+      <h3 className="text-sm font-medium text-foreground">Screenshots</h3>
       
       <Gallery>
-        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4">
           {screenshots.map((url, index) => (
             <Item
               key={index}
@@ -36,8 +36,8 @@ export function ScreenshotGallery({ screenshots }: ScreenshotGalleryProps) {
                     }}
                   />
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="text-white text-xs sm:text-sm font-medium">
-                      View Fullscreen
+                    <span className="text-white text-xs sm:text-sm font-medium px-2 text-center">
+                      Tap to View
                     </span>
                   </div>
                 </div>

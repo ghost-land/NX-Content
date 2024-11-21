@@ -9,6 +9,7 @@ import { useSearch } from './hooks/useSearch';
 import { useUserPreferences } from './store/userPreferences';
 import { sortByReleaseDate } from './utils/sorting';
 import { isValidDate } from './utils/dates';
+import packageJson from '../package.json';
 
 interface WorkingJsonItem {
   "Game Name": string;
@@ -144,10 +145,10 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header onToggleTheme={() => setDarkMode(!isDark)} />
       
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="flex-1 max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="w-full rounded-lg p-4 border bg-card border-border text-foreground select-none">
             <h3 className="text-sm font-medium text-muted-foreground">Base Games</h3>
@@ -197,6 +198,22 @@ export default function App() {
           />
         </div>
       </main>
+
+      <footer className="border-t border-border py-4 px-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="text-xs text-muted-foreground">
+            Version {packageJson.version}
+          </div>
+          <a
+            href="https://github.com/ghost-land/NX-Working"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            View on GitHub
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }

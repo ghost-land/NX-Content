@@ -11,21 +11,20 @@ export function TabNavigation({ activeTab, onTabChange, counts }: TabNavigationP
   return (
     <div className="bg-card rounded-lg p-1 border border-border">
       <nav className="flex space-x-1">
-        {tabs.map(({ id, name, icon: Icon, count }) => (
+        {tabs.map(({ id, name, icon: Icon }) => (
           <button
             key={id}
             onClick={() => onTabChange(id)}
             className={`
-              flex-1 flex items-center justify-center py-3 px-4 rounded-md text-sm font-medium transition-all
+              flex-1 flex items-center justify-center py-2 sm:py-3 px-3 sm:px-4 rounded-md text-sm font-medium transition-all
               ${activeTab === id
                 ? 'bg-primary text-primary-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
               }
             `}
           >
-            <Icon className="h-5 w-5 mr-2" />
-            <span>{name}</span>
-            <span className="ml-2 text-xs opacity-75">({count.toLocaleString()})</span>
+            <Icon className="h-5 w-5 sm:mr-2" />
+            <span className="hidden sm:inline">{name}</span>
           </button>
         ))}
       </nav>
