@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 255 255 255;
+  --foreground: 15 23 42;
+  
+  --muted: 241 245 249;
+  --muted-foreground: 100 116 139;
+  
+  --card: 255 255 255;
+  --card-foreground: 15 23 42;
+  
+  --border: 226 232 240;
+  
+  --primary: 37 99 235;
+  --primary-foreground: 255 255 255;
+}
+
+:root[class~="dark"] {
+  --background: 15 23 42;
+  --foreground: 226 232 240;
+  
+  --muted: 30 41 59;
+  --muted-foreground: 148 163 184;
+  
+  --card: 30 41 59;
+  --card-foreground: 226 232 240;
+  
+  --border: 51 65 85;
+  
+  --primary: 59 130 246;
+  --primary-foreground: 255 255 255;
+}
+
+body {
+  @apply antialiased bg-background text-foreground;
+}
+
+.icon-container {
+  @apply relative w-16 h-16 flex-shrink-0;
+}
+
+.icon-container img {
+  @apply absolute inset-0 w-full h-full object-cover rounded-lg;
+  aspect-ratio: 1/1;
+}
