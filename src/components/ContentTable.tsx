@@ -37,7 +37,7 @@ export function ContentTable({
     const { updates, dlcs } = getRelatedContent(allItems, baseId);
     
     return (
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {updates.length > 0 && (
           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-500/10 text-blue-500">
             {updates.length} Update{updates.length !== 1 ? 's' : ''}
@@ -53,41 +53,37 @@ export function ContentTable({
   };
 
   const renderSortHeader = (field: SortField, label: string, showForType?: 'base' | 'update' | 'dlc') => {
-    // Si showForType est spécifié et que tous les éléments ne sont pas de ce type, masquer la colonne
     const shouldShow = !showForType || items.every(item => item.type === showForType);
     if (!shouldShow) return null;
 
     return (
-      <th className="px-6 py-3 text-left">
-        <button
-          onClick={() => onSort(field)}
-          className="flex items-center space-x-2 group w-full"
-        >
-          <span className={`
-            text-xs font-medium uppercase tracking-wider
-            ${sortField === field ? 'text-primary' : 'text-muted-foreground'}
-            group-hover:text-primary transition-colors
-          `}>
-            {label}
-          </span>
-          <span className={`
-            transition-all duration-200
-            ${sortField === field ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}
-          `}>
-            {sortField === field && (
-              sortDirection === 'asc' ? (
-                <ArrowUp className="h-4 w-4" />
-              ) : (
-                <ArrowDown className="h-4 w-4" />
-              )
-            )}
-          </span>
-        </button>
-      </th>
+      <button
+        onClick={() => onSort(field)}
+        className="flex items-center space-x-2 group w-full"
+      >
+        <span className={`
+          text-xs font-medium uppercase tracking-wider
+          ${sortField === field ? 'text-primary' : 'text-muted-foreground'}
+          group-hover:text-primary transition-colors
+        `}>
+          {label}
+        </span>
+        <span className={`
+          transition-all duration-200
+          ${sortField === field ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}
+        `}>
+          {sortField === field && (
+            sortDirection === 'asc' ? (
+              <ArrowUp className="h-4 w-4" />
+            ) : (
+              <ArrowDown className="h-4 w-4" />
+            )
+          )}
+        </span>
+      </button>
     );
   };
 
-  // Vérifier si nous affichons des jeux de base
   const showingBaseGames = items.length > 0 && items[0].type === 'base';
 
   return (
@@ -96,17 +92,29 @@ export function ContentTable({
         <table className="min-w-full divide-y divide-border">
           <thead className="bg-muted">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-24">
+              <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider w-16 sm:w-24">
                 Icon
               </th>
-              {renderSortHeader('id', 'Title ID')}
-              {renderSortHeader('name', 'Name')}
-              {renderSortHeader('size', 'Size')}
-              {showingBaseGames && renderSortHeader('releaseDate', 'Release Date', 'base')}
-              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <th className="px-3 sm:px-6 py-3 text-left">
+                {renderSortHeader('id', 'Title ID')}
+              </th>
+              <th className="px-3 sm:px-6 py-3 text-left">
+                {renderSortHeader('name', 'Name')}
+              </th>
+              <th className="hidden sm:table-cell px-3 sm:px-6 py-3 text-left">
+                {renderSortHeader('size', 'Size')}
+              </th>
+              {showingBaseGames && (
+                <th className="hidden md:table-cell px-3 sm:px-6 py-3 text-left">
+                  {renderSortHeader('releaseDate', 'Release Date', 'base')}
+                </th>
+              )}
+              <th className="hidden sm:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Related Content
               </th>
-              <th className="px-6 py-3 text-right"></th>
+              <th className="px-3 sm:px-6 py-3 text-right">
+                <span className="sr-only">Actions</span>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -116,7 +124,7 @@ export function ContentTable({
                 onClick={() => handleDetails(item.id)}
                 className="group hover:bg-muted/50 active:bg-muted transition-colors cursor-pointer"
               >
-                <td className="px-6 py-4">
+                <td className="px-3 sm:px-6 py-4">
                   <div className="icon-container transform group-hover:scale-105 transition-transform duration-200">
                     <img
                       src={getIconUrl(item.id)}
@@ -129,8 +137,8 @@ export function ContentTable({
                     />
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="font-mono text-sm group-hover:text-primary transition-colors">
+                <td className="px-3 sm:px-6 py-4">
+                  <div className="font-mono text-xs sm:text-sm group-hover:text-primary transition-colors">
                     {item.id}
                   </div>
                   {item.version && (
@@ -139,27 +147,30 @@ export function ContentTable({
                     </div>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm group-hover:text-primary transition-colors">
+                <td className="px-3 sm:px-6 py-4">
+                  <div className="text-sm group-hover:text-primary transition-colors line-clamp-2 sm:line-clamp-1">
                     {item.name || 'Unknown Title'}
                   </div>
+                  <div className="sm:hidden text-xs text-muted-foreground mt-1">
+                    {formatFileSize(item.size)}
+                  </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="hidden sm:table-cell px-3 sm:px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-muted-foreground">
                     {formatFileSize(item.size)}
                   </div>
                 </td>
                 {showingBaseGames && (
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="hidden md:table-cell px-3 sm:px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-muted-foreground">
                       {formatDate(item.releaseDate)}
                     </div>
                   </td>
                 )}
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="hidden sm:table-cell px-3 sm:px-6 py-4">
                   {getContentBadges(item.id)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right">
+                <td className="px-3 sm:px-6 py-4 text-right">
                   <Info className="h-5 w-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                 </td>
               </tr>
@@ -181,8 +192,8 @@ export function ContentTable({
       )}
 
       {selectedId && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-card rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-border">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50">
+          <div className="bg-card rounded-lg shadow-xl w-full max-h-[95vh] overflow-y-auto border border-border sm:max-w-4xl">
             <GameDetails
               content={getRelatedContent(allItems, selectedId)}
               onClose={() => setSelectedId(null)}

@@ -21,10 +21,10 @@ function ContentList({ items, maxVisible = 5, type }: ContentListProps) {
     <div className="space-y-3">
       {visibleItems.map(item => (
         <div key={item.uniqueId} className="text-sm">
-          <p className="font-mono text-xs text-muted-foreground">
+          <p className="font-mono text-xs text-muted-foreground break-all">
             {item.id}
           </p>
-          {item.name && <p className="text-sm">{item.name}</p>}
+          {item.name && <p className="text-sm break-words">{item.name}</p>}
           {item.version && type === 'update' && (
             <p className="text-xs text-muted-foreground mt-1">
               Version {item.version}
@@ -67,18 +67,18 @@ export function GameDetails({ content, onClose }: GameDetailsProps) {
   const assets = getVisualAssets(base.id);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Content Details</h2>
-        <div className="flex items-center space-x-3">
+        <h2 className="text-lg sm:text-xl font-bold line-clamp-1">{base.name || 'Content Details'}</h2>
+        <div className="flex items-center space-x-2 sm:space-x-3">
           <a
             href={`https://stats.ghostland.at/${base.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm"
           >
             <ExternalLink className="h-4 w-4" />
-            <span>View Stats</span>
+            <span className="hidden sm:inline">View Stats</span>
           </a>
           <button
             onClick={onClose}
@@ -90,7 +90,6 @@ export function GameDetails({ content, onClose }: GameDetailsProps) {
         </div>
       </div>
 
-      {/* Banner */}
       <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
         <img
           src={assets.banner}
@@ -103,8 +102,7 @@ export function GameDetails({ content, onClose }: GameDetailsProps) {
         />
       </div>
 
-      {/* Content Info */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-card border border-border p-4 rounded-lg">
           <div className="flex items-center space-x-3 mb-3">
             <img
@@ -118,10 +116,10 @@ export function GameDetails({ content, onClose }: GameDetailsProps) {
             />
             <div>
               <h3 className="text-sm font-medium">Base Game</h3>
-              <p className="text-xs text-muted-foreground font-mono">{base.id}</p>
+              <p className="text-xs text-muted-foreground font-mono break-all">{base.id}</p>
             </div>
           </div>
-          {base.name && <p className="text-sm mb-2">{base.name}</p>}
+          {base.name && <p className="text-sm mb-2 break-words">{base.name}</p>}
           {base.size && (
             <p className="text-sm text-muted-foreground">
               Size: {formatFileSize(base.size)}
@@ -163,7 +161,6 @@ export function GameDetails({ content, onClose }: GameDetailsProps) {
         )}
       </div>
 
-      {/* Screenshots */}
       <ScreenshotGallery screenshots={assets.screenshots} />
     </div>
   );

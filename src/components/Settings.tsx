@@ -31,8 +31,8 @@ export function Settings({ onClose }: SettingsProps) {
   } = useUserPreferences();
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-card rounded-lg shadow-xl max-w-2xl w-full border border-border">
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50">
+      <div className="bg-card rounded-lg shadow-xl w-full max-w-lg border border-border">
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center space-x-2">
             <SettingsIcon className="h-5 w-5 text-primary" />
@@ -47,7 +47,6 @@ export function Settings({ onClose }: SettingsProps) {
         </div>
 
         <div className="p-4 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-          {/* Search Settings */}
           <section className="space-y-4">
             <h3 className="text-sm font-medium text-muted-foreground">Search Settings</h3>
             
@@ -64,7 +63,7 @@ export function Settings({ onClose }: SettingsProps) {
                 onChange={(e) => setNamePrecision(parseFloat(e.target.value))}
                 className="w-full accent-primary"
               />
-              <div className="flex justify-between text-sm text-muted-foreground mt-1">
+              <div className="flex justify-between text-xs sm:text-sm text-muted-foreground mt-1">
                 <span>Exact Match</span>
                 <span>Fuzzy Match</span>
               </div>
@@ -83,14 +82,13 @@ export function Settings({ onClose }: SettingsProps) {
                 onChange={(e) => setTidPrecision(parseFloat(e.target.value))}
                 className="w-full accent-primary"
               />
-              <div className="flex justify-between text-sm text-muted-foreground mt-1">
+              <div className="flex justify-between text-xs sm:text-sm text-muted-foreground mt-1">
                 <span>Exact Match</span>
                 <span>Partial Match</span>
               </div>
             </div>
           </section>
 
-          {/* Display Settings */}
           <section className="space-y-4">
             <h3 className="text-sm font-medium text-muted-foreground">Display Settings</h3>
             
@@ -101,7 +99,7 @@ export function Settings({ onClose }: SettingsProps) {
               <select
                 value={itemsPerPage}
                 onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                className="w-full bg-muted border border-border rounded-lg px-3 py-2"
+                className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm"
               >
                 <option value={10}>10 items</option>
                 <option value={25}>25 items</option>
@@ -157,7 +155,7 @@ export function Settings({ onClose }: SettingsProps) {
               <select
                 value={maxDlcDisplay}
                 onChange={(e) => setMaxDlcDisplay(Number(e.target.value))}
-                className="w-full bg-muted border border-border rounded-lg px-3 py-2"
+                className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm"
               >
                 <option value={5}>5 DLCs</option>
                 <option value={10}>10 DLCs</option>
@@ -174,7 +172,7 @@ export function Settings({ onClose }: SettingsProps) {
               <select
                 value={maxUpdateDisplay}
                 onChange={(e) => setMaxUpdateDisplay(Number(e.target.value))}
-                className="w-full bg-muted border border-border rounded-lg px-3 py-2"
+                className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm"
               >
                 <option value={5}>5 Updates</option>
                 <option value={10}>10 Updates</option>
@@ -191,7 +189,7 @@ export function Settings({ onClose }: SettingsProps) {
               <select
                 value={autoRefreshInterval || ''}
                 onChange={(e) => setAutoRefreshInterval(e.target.value ? Number(e.target.value) : null)}
-                className="w-full bg-muted border border-border rounded-lg px-3 py-2"
+                className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm"
               >
                 <option value="">Disabled</option>
                 <option value="300000">5 minutes</option>
@@ -202,7 +200,6 @@ export function Settings({ onClose }: SettingsProps) {
             </div>
           </section>
 
-          {/* Advanced Settings */}
           <section className="border-t border-border pt-4">
             <button
               onClick={() => setShowAdvanced(!showAdvanced)}
@@ -226,7 +223,7 @@ export function Settings({ onClose }: SettingsProps) {
                     type="url"
                     value={dataSources.workingContent}
                     onChange={(e) => setDataSource('workingContent', e.target.value)}
-                    className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm"
+                    className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-xs sm:text-sm break-all"
                     placeholder="Enter URL for working.txt"
                   />
                 </div>
@@ -239,7 +236,7 @@ export function Settings({ onClose }: SettingsProps) {
                     type="url"
                     value={dataSources.titlesDb}
                     onChange={(e) => setDataSource('titlesDb', e.target.value)}
-                    className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm"
+                    className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-xs sm:text-sm break-all"
                     placeholder="Enter URL for titles_db.txt"
                   />
                 </div>
