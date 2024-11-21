@@ -1,5 +1,5 @@
 {
-  "name": "nx-working",
+  "name": "nx-content",
   "private": true,
   "version": "3.0.0",
   "type": "module",
@@ -12,7 +12,7 @@
     "clsx": "^2.1.0",
     "fuse.js": "^7.0.0",
     "lucide-react": "^0.344.0",
-    "nx-working": "file:",
+    "nx-content": "file:",
     "photoswipe": "^5.4.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

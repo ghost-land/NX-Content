@@ -34,7 +34,7 @@ export function Header({ onToggleTheme }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <Database className="h-6 w-6 text-primary" />
-          <h1 className="text-xl font-bold">NX Working Content Tracker</h1>
+          <h1 className="text-xl font-bold">NX Content Tracker</h1>
         </div>
         
         <div className="flex items-center space-x-2 sm:space-x-4">
@@ -53,7 +53,8 @@ export function Header({ onToggleTheme }: HeaderProps) {
               }`}
             >
               <AlertTriangle className="h-4 w-4" />
-              <span>View Logs {errorCount > 0 ? `(${errorCount})` : ''}</span>
+              <span className="hidden sm:inline">View Logs {errorCount > 0 ? `(${errorCount})` : ''}</span>
+              <span className="sm:hidden">{errorCount > 0 ? errorCount : totalLogs}</span>
             </button>
           )}
 
@@ -78,7 +79,7 @@ export function Header({ onToggleTheme }: HeaderProps) {
           </button>
 
           <a
-            href="https://github.com/ghost-land/NX-Working"
+            href="https://github.com/ghost-land/NX-Content"
             target="_blank"
             rel="noopener noreferrer"
             className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-lg hover:bg-muted transition-colors"

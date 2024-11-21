@@ -131,18 +131,18 @@ export default function App() {
     );
   }
 
+  const counts = {
+    base: items.filter(item => item.type === 'base').length,
+    update: items.filter(item => item.type === 'update').length,
+    dlc: items.filter(item => item.type === 'dlc').length
+  };
+
   const filteredItems = results.filter(item => item.type === lastActiveTab);
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
   const paginatedItems = filteredItems.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-  const counts = {
-    base: items.filter(item => item.type === 'base').length,
-    update: items.filter(item => item.type === 'update').length,
-    dlc: items.filter(item => item.type === 'dlc').length
-  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -205,7 +205,7 @@ export default function App() {
             Version {packageJson.version}
           </div>
           <a
-            href="https://github.com/ghost-land/NX-Working"
+            href="https://github.com/ghost-land/NX-Content"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-muted-foreground hover:text-foreground transition-colors"
