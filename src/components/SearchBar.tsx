@@ -5,17 +5,13 @@ interface SearchBarProps {
   tidQuery: string;
   onNameChange: (value: string) => void;
   onTidChange: (value: string) => void;
-  resultCount?: number;
-  totalCount?: number;
 }
 
 export function SearchBar({ 
   nameQuery, 
   tidQuery, 
   onNameChange, 
-  onTidChange, 
-  resultCount, 
-  totalCount 
+  onTidChange
 }: SearchBarProps) {
   return (
     <div className="flex flex-col sm:flex-row gap-4">
@@ -64,7 +60,7 @@ export function SearchBar({
           maxLength={16}
           className={`
             block w-full pl-10 pr-10 py-3 bg-card border border-border rounded-lg 
-            text-foreground placeholder-muted-foreground font-mono uppercase
+            text-foreground placeholder-muted-foreground font-mono
             focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent 
             hover:border-primary/50 transition-all duration-200
             ${tidQuery ? 'ring-2 ring-primary' : ''}
@@ -80,15 +76,6 @@ export function SearchBar({
           </button>
         )}
       </div>
-
-      {/* Results counter */}
-      {resultCount !== undefined && totalCount !== undefined && (
-        <div className="hidden sm:flex items-center justify-center px-4 py-2 bg-muted rounded-lg min-w-[120px]">
-          <span className="text-sm text-muted-foreground">
-            {resultCount.toLocaleString()} / {totalCount.toLocaleString()}
-          </span>
-        </div>
-      )}
     </div>
   );
 }

@@ -38,8 +38,14 @@ export function ErrorLog({ onClose }: ErrorLogProps) {
   const logs = filter === 'all' ? logger.getLogs() : logger.getErrorLogs();
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-card rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col border border-border">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-card rounded-lg shadow-xl w-full max-w-4xl max-h-[95vh] flex flex-col border border-border"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="p-4 border-b border-border flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <AlertTriangle className="h-5 w-5 text-primary" />
@@ -58,7 +64,7 @@ export function ErrorLog({ onClose }: ErrorLogProps) {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `nx-working-logs-${new Date().toISOString()}.txt`;
+                a.download = `nx-content-logs-${new Date().toISOString()}.txt`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -67,7 +73,7 @@ export function ErrorLog({ onClose }: ErrorLogProps) {
               className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
             >
               <FileText className="h-4 w-4" />
-              <span>Export Logs</span>
+              <span className="hidden sm:inline">Export Logs</span>
             </button>
             <button
               onClick={onClose}
@@ -78,11 +84,11 @@ export function ErrorLog({ onClose }: ErrorLogProps) {
           </div>
         </div>
 
-        <div className="p-4 border-b border-border flex items-center justify-between">
+        <div className="p-4 border-b border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as 'all' | 'error')}
-            className="bg-muted border border-border rounded-lg px-3 py-1.5 text-foreground hover:border-primary/50 transition-colors"
+            className="w-full sm:w-auto bg-muted border border-border rounded-lg px-3 py-1.5 text-foreground hover:border-primary/50 transition-colors text-sm"
           >
             <option value="all">All Logs ({logger.getLogs().length})</option>
             <option value="error">Errors Only ({logger.getErrorLogs().length})</option>
@@ -93,7 +99,7 @@ export function ErrorLog({ onClose }: ErrorLogProps) {
               logger.clearLogs();
               onClose();
             }}
-            className="px-3 py-1.5 text-sm text-red-500 hover:text-red-600 transition-colors"
+            className="w-full sm:w-auto px-3 py-1.5 text-sm text-red-500 hover:text-red-600 transition-colors text-center"
           >
             Clear All Logs
           </button>
@@ -125,11 +131,11 @@ export function ErrorLog({ onClose }: ErrorLogProps) {
                         {log.level.toUpperCase()}
                       </span>
                     </div>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-xs sm:text-sm text-muted-foreground">
                       {new Date(log.timestamp).toLocaleString()}
                     </span>
                   </div>
-                  <p className="mb-2 text-foreground">{log.message}</p>
+                  <p className="mb-2 text-sm text-foreground break-words">{log.message}</p>
                   {log.details && formatLogDetails(log.details)}
                 </div>
               ))}

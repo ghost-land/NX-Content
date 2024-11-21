@@ -31,8 +31,14 @@ export function Settings({ onClose }: SettingsProps) {
   } = useUserPreferences();
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50">
-      <div className="bg-card rounded-lg shadow-xl w-full max-w-lg border border-border">
+    <div 
+      className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-card rounded-lg shadow-xl w-full max-w-lg border border-border"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center space-x-2">
             <SettingsIcon className="h-5 w-5 text-primary" />

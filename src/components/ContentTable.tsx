@@ -192,7 +192,10 @@ export function ContentTable({
       )}
 
       {selectedId && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50">
+        <div 
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50"
+          onClick={() => setSelectedId(null)}
+        >
           <div className="bg-card rounded-lg shadow-xl w-full max-h-[95vh] overflow-y-auto border border-border sm:max-w-4xl">
             <GameDetails
               content={getRelatedContent(allItems, selectedId)}

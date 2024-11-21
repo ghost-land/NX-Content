@@ -67,101 +67,103 @@ export function GameDetails({ content, onClose }: GameDetailsProps) {
   const assets = getVisualAssets(base.id);
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg sm:text-xl font-bold line-clamp-1">{base.name || 'Content Details'}</h2>
-        <div className="flex items-center space-x-2 sm:space-x-3">
-          <a
-            href={`https://stats.ghostland.at/${base.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm"
-          >
-            <ExternalLink className="h-4 w-4" />
-            <span className="hidden sm:inline">View Stats</span>
-          </a>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-muted rounded-full transition-colors"
-            aria-label="Close details"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
-
-      <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
-        <img
-          src={assets.banner}
-          alt="Game Banner"
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            const img = e.target as HTMLImageElement;
-            img.style.display = 'none';
-          }}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="bg-card border border-border p-4 rounded-lg">
-          <div className="flex items-center space-x-3 mb-3">
-            <img
-              src={assets.icon}
-              alt="Game Icon"
-              className="w-12 h-12 rounded"
-              onError={(e) => {
-                const img = e.target as HTMLImageElement;
-                img.style.display = 'none';
-              }}
-            />
-            <div>
-              <h3 className="text-sm font-medium">Base Game</h3>
-              <p className="text-xs text-muted-foreground font-mono break-all">{base.id}</p>
-            </div>
+    <div className="relative" onClick={(e) => e.stopPropagation()}>
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg sm:text-xl font-bold line-clamp-1">{base.name || 'Content Details'}</h2>
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <a
+              href={`https://stats.ghostland.at/${base.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm"
+            >
+              <ExternalLink className="h-4 w-4" />
+              <span className="hidden sm:inline">View Stats</span>
+            </a>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-muted rounded-full transition-colors"
+              aria-label="Close details"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
-          {base.name && <p className="text-sm mb-2 break-words">{base.name}</p>}
-          {base.size && (
-            <p className="text-sm text-muted-foreground">
-              Size: {formatFileSize(base.size)}
-            </p>
-          )}
-          {base.releaseDate && (
-            <p className="text-sm text-muted-foreground">
-              Released: {formatDate(base.releaseDate)}
-            </p>
-          )}
         </div>
 
-        {updates.length > 0 && (
-          <div className="bg-card border border-border p-4 rounded-lg">
-            <div className="flex items-center space-x-2 mb-3">
-              <Download className="h-5 w-5 text-blue-500" />
-              <h3 className="text-sm font-medium">Updates ({updates.length})</h3>
-            </div>
-            <ContentList 
-              items={updates} 
-              maxVisible={maxUpdateDisplay} 
-              type="update"
-            />
-          </div>
-        )}
+        <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+          <img
+            src={assets.banner}
+            alt="Game Banner"
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              const img = e.target as HTMLImageElement;
+              img.style.display = 'none';
+            }}
+          />
+        </div>
 
-        {dlcs.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-card border border-border p-4 rounded-lg">
-            <div className="flex items-center space-x-2 mb-3">
-              <Package className="h-5 w-5 text-purple-500" />
-              <h3 className="text-sm font-medium">DLCs ({dlcs.length})</h3>
+            <div className="flex items-center space-x-3 mb-3">
+              <img
+                src={assets.icon}
+                alt="Game Icon"
+                className="w-12 h-12 rounded"
+                onError={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  img.style.display = 'none';
+                }}
+              />
+              <div>
+                <h3 className="text-sm font-medium">Base Game</h3>
+                <p className="text-xs text-muted-foreground font-mono break-all">{base.id}</p>
+              </div>
             </div>
-            <ContentList 
-              items={dlcs} 
-              maxVisible={maxDlcDisplay} 
-              type="dlc"
-            />
+            {base.name && <p className="text-sm mb-2 break-words">{base.name}</p>}
+            {base.size && (
+              <p className="text-sm text-muted-foreground">
+                Size: {formatFileSize(base.size)}
+              </p>
+            )}
+            {base.releaseDate && (
+              <p className="text-sm text-muted-foreground">
+                Released: {formatDate(base.releaseDate)}
+              </p>
+            )}
           </div>
-        )}
+
+          {updates.length > 0 && (
+            <div className="bg-card border border-border p-4 rounded-lg">
+              <div className="flex items-center space-x-2 mb-3">
+                <Download className="h-5 w-5 text-blue-500" />
+                <h3 className="text-sm font-medium">Updates ({updates.length})</h3>
+              </div>
+              <ContentList 
+                items={updates} 
+                maxVisible={maxUpdateDisplay} 
+                type="update"
+              />
+            </div>
+          )}
+
+          {dlcs.length > 0 && (
+            <div className="bg-card border border-border p-4 rounded-lg">
+              <div className="flex items-center space-x-2 mb-3">
+                <Package className="h-5 w-5 text-purple-500" />
+                <h3 className="text-sm font-medium">DLCs ({dlcs.length})</h3>
+              </div>
+              <ContentList 
+                items={dlcs} 
+                maxVisible={maxDlcDisplay} 
+                type="dlc"
+              />
+            </div>
+          )}
+        </div>
+
+        <ScreenshotGallery screenshots={assets.screenshots} />
       </div>
-
-      <ScreenshotGallery screenshots={assets.screenshots} />
     </div>
   );
 }

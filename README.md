@@ -9,10 +9,16 @@ A modern web application for tracking Nintendo Switch content, built with React 
 - 🌓 Dark/Light theme support
 - 📱 Fully responsive design
 - 📊 Detailed content information
-- 🖼️ Screenshot gallery with lightbox
+- 🖼️ Interactive screenshot gallery with advanced features:
+  - Zoom and rotation controls
+  - Slideshow mode
+  - Fullscreen support
+  - Keyboard shortcuts
+  - Touch gestures
+  - Image download
 - 📈 Download statistics integration
 - 🔄 Auto-refresh capabilities
-- 🎯 Customizable display settings
+- ⚙️ Customizable display settings
 
 ## Development
 
@@ -21,7 +27,7 @@ This project uses:
 - React 18 with TypeScript
 - Tailwind CSS for styling
 - Zustand for state management
-- PhotoSwipe for the gallery viewer
+- Lucide for icons
 
 ### Getting Started
 
@@ -49,6 +55,25 @@ The application supports various configuration options through the settings pane
 - Auto-refresh intervals
 - Custom data source URLs
 
+## Gallery Controls
+
+The screenshot gallery supports various controls:
+- **Keyboard**:
+  - Arrow keys: Navigate between images
+  - R: Rotate image
+  - +/-: Zoom in/out
+  - F: Toggle fullscreen
+  - Space: Toggle slideshow
+  - ESC: Close gallery
+- **Mouse**:
+  - Click and drag to pan
+  - Mouse wheel to zoom
+  - Click outside to close
+- **Touch**:
+  - Swipe to navigate
+  - Pinch to zoom
+  - Double tap to toggle zoom
+
 ## Contributing
 
 1. Fork the repository
@@ -65,4 +90,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Data provided by [nlib.cc](https://nlib.cc)
 - Icons by [Lucide](https://lucide.dev)
-- Gallery powered by [PhotoSwipe](https://photoswipe.com)
+- Stats by [ghostland.at](https://stats.ghostland.at)

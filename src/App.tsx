@@ -176,8 +176,6 @@ export default function App() {
             tidQuery={tidQuery}
             onNameChange={setNameQuery}
             onTidChange={setTidQuery}
-            resultCount={filteredItems.length}
-            totalCount={items.filter(item => item.type === lastActiveTab).length}
           />
 
           <TabNavigation
