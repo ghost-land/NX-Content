@@ -2,6 +2,8 @@
 
 A modern web application for tracking Nintendo Switch content, built with React and TypeScript.
 
+https://github.com/user-attachments/assets/896af358-a0b1-4199-8da2-2d5dd26edd76
+
 ## Features
 
 - 🎮 Track base games, updates, and DLC content
