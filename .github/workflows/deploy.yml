@@ -18,13 +18,8 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - name: Clean up node_modules and package-lock.json
-        run: |
-          if (Test-Path node_modules) { Remove-Item -Recurse -Force node_modules }
-          if (Test-Path package-lock.json) { Remove-Item package-lock.json }
-
-      - name: Install dependencies
-        run: npm install
+      - name: Install dependencies (and update lock file if needed)
+        run: npm install --no-audit
 
       - name: Install Rollup optional dependency
         run: npm install @rollup/rollup-win32-x64-msvc
