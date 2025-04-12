@@ -32,23 +32,31 @@ function App() {
   const [stage, setStage] = useState<'downloading' | 'processing'>('downloading');
   const [loadingText, setLoadingText] = useState('Loading database...');
   
+  // URL Search Params - Only used for content list view
   const getRandomBaseGame = useCallback(() => {
     const baseGames = games.filter(game => game.tid.endsWith('000'));
     if (baseGames.length === 0) return null;
     const randomIndex = Math.floor(Math.random() * baseGames.length);
     return baseGames[randomIndex];
   }, [games]);
-  
-  // URL Search Params
-  const [searchParams, setSearchParams] = useSearchParams({
-    page: '1',
-    sort: 'name',
-    order: 'asc',
-    type: 'base', 
-    search: '',
-    tid: '',
-    game: ''
-  });
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isContentView = searchParams.get('view') === 'content';
+
+  // Initialize params only when in content view
+  useEffect(() => {
+    if (isContentView && !searchParams.get('page')) {
+      setSearchParams({
+        view: 'content',
+        page: '1',
+        sort: 'name',
+        order: 'asc',
+        type: 'base',
+        search: '',
+        tid: '',
+      });
+    }
+  }, [isContentView]);
 
   const currentPage = parseInt(searchParams.get('page') || '1');
   const sortBy = searchParams.get('sort') as 'name' | 'size' | 'date' || 'name';
@@ -66,6 +74,7 @@ function App() {
   // Update URL when debounced values change
   useEffect(() => {
     updateSearchParams({ 
+      view: 'content',
       search: debouncedName,
       tid: debouncedTid,
       page: '1'
@@ -75,6 +84,13 @@ function App() {
   // Update URL params when filters change
   const updateSearchParams = (updates: Record<string, string>) => {
     const newParams = new URLSearchParams(searchParams);
+    
+    // Always preserve the view parameter if it exists
+    const currentView = searchParams.get('view');
+    if (currentView) {
+      newParams.set('view', currentView);
+    }
+    
     Object.entries(updates).forEach(([key, value]) => {
       if (value) {
         newParams.set(key, value);
@@ -323,8 +339,6 @@ function App() {
           onShowAllUpdatesChange={setShowAllUpdates}
           onShowAllDLCsChange={setShowAllDLCs}
           onGameSelect={(tid) => updateSearchParams({ game: tid })}
-          getRandomBaseGame={getRandomBaseGame}
-          updateSearchParams={updateSearchParams}
         />
       )}
       </Suspense>

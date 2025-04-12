@@ -29,8 +29,6 @@ interface HomePageProps {
   onShowAllUpdatesChange: (show: boolean) => void;
   onShowAllDLCsChange: (show: boolean) => void;
   onGameSelect: (tid: string) => void;
-  getRandomBaseGame: () => ProcessedGame | null;
-  updateSearchParams: (params: Record<string, string>) => void;
 }
 
 export function HomePage({
@@ -53,8 +51,6 @@ export function HomePage({
   onShowAllUpdatesChange,
   onShowAllDLCsChange,
   onGameSelect,
-  getRandomBaseGame,
-  updateSearchParams
 }: HomePageProps) {
   return (
     <div className="min-h-screen p-4 md:p-8">
@@ -76,7 +72,7 @@ export function HomePage({
           <div className="mt-12">
             <div className="flex flex-col sm:flex-row justify-center items-stretch gap-3 max-w-2xl mx-auto px-4 sm:px-0">
               <button
-                onClick={() => updateSearchParams({ view: 'content' })}
+                onClick={() => window.location.href = '/?view=content'}
                 className="w-full sm:flex-1 btn-orange"
               >
                 <div className="relative flex items-center justify-center">
@@ -95,10 +91,11 @@ export function HomePage({
               </button>
               <button
                 onClick={() => {
-                  const randomGame = getRandomBaseGame();
-                  if (randomGame) {
-                    updateSearchParams({ game: randomGame.tid });
-                  }
+                  const baseGames = games.filter(g => g.tid.endsWith('000'));
+                  if (baseGames.length === 0) return;
+                  const randomIndex = Math.floor(Math.random() * baseGames.length);
+                  const randomGame = baseGames[randomIndex];
+                  onGameSelect(randomGame.tid);
                 }}
                 className="w-full sm:flex-1 btn-orange glass"
               >
