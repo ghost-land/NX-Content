@@ -1,0 +1,32 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow crawling of error pages
+Disallow: /404.html
+
+# Sitemap location
+Sitemap: https://nx-content.ghostland.at/sitemap.xml
+
+# Crawl-delay to prevent server overload
+Crawl-delay: 1
+
+# Additional rules for specific bots
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+# Rate limiting for high-traffic bots
+User-agent: AhrefsBot
+Crawl-delay: 5
+
+User-agent: MJ12bot
+Crawl-delay: 5
+
+User-agent: SemrushBot
+Crawl-delay: 5
