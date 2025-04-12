@@ -1,15 +1,21 @@
+import { DivideIcon as LucideIcon } from 'lucide-react';
+
 interface StatsCardProps {
+  icon: LucideIcon;
   title: string;
-  count: number;
+  value: number | string;
 }
 
-export function StatsCard({ title, count }: StatsCardProps) {
+export function StatsCard({ icon: Icon, title, value }: StatsCardProps) {
   return (
-    <div className="w-full rounded-lg p-4 border bg-card border-border text-foreground select-none">
-      <h3 className="text-sm font-medium text-muted-foreground">
-        {title}
-      </h3>
-      <p className="mt-2 text-3xl font-bold">{count.toLocaleString()}</p>
+    <div className="card-glass p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <Icon className="w-5 h-5 text-orange-400" />
+        <h3 className="heading-2 text-white">{title}</h3>
+      </div>
+      <p className="text-3xl font-semibold text-white/90">
+        {value}
+      </p>
     </div>
   );
 }

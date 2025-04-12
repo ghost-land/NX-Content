@@ -1,11 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0;url=https://nx-content.ghostland.at">
-  <title>Redirecting...</title>
+  <meta charset="UTF-8" />
+  
+  <!-- Primary Meta Tags -->
+  <title>Page Not Found - NX Content Tracker</title>
+  <meta name="title" content="Page Not Found - NX Content Tracker">
+  <meta name="description" content="The page you're looking for doesn't exist or has been moved.">
+  <meta name="robots" content="noindex, follow">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Page Not Found - NX Content Tracker">
+  <meta property="og:description" content="The page you're looking for doesn't exist or has been moved.">
+  
+  <!-- Additional Meta Tags -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: radial-gradient(circle at 0% 0%, rgba(255, 97, 0, 0.12) 0%, transparent 50%),
+                  radial-gradient(circle at 100% 0%, rgba(255, 97, 0, 0.12) 0%, transparent 50%),
+                  linear-gradient(180deg, #111827 0%, #1e1b18 100%);
+      min-height: 100vh;
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .card-glass {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+      backdrop-filter: blur(8px);
+      border-radius: 1rem;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    .btn-orange {
+      background: linear-gradient(to right, rgb(234, 88, 12), rgb(194, 65, 12));
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-orange:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 25px rgba(234, 88, 12, 0.3);
+    }
+    .btn-orange:active {
+      transform: scale(0.98);
+    }
+    .text-gradient {
+      background: linear-gradient(to right, rgb(253, 186, 116), rgb(234, 88, 12));
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+  </style>
 </head>
-<body>
-  <p>If you are not redirected, <a href="https://nx-content.ghostland.at">click here</a>.</p>
+<body class="text-white/90 selection:bg-orange-500/20 selection:text-orange-200">
+  <div class="min-h-screen flex items-center justify-center p-4">
+    <div class="card-glass p-8 max-w-lg w-full text-center space-y-6">
+      <div class="space-y-4">
+        <h1 class="text-4xl sm:text-5xl font-bold">
+          <span class="text-red-500">4</span>
+          <span class="text-gradient">0</span>
+          <span class="text-red-500">4</span>
+        </h1>
+        <p class="text-xl sm:text-2xl font-medium text-white/90">Page Not Found</p>
+        <p class="text-white/70">The page you're looking for doesn't exist or has been moved.</p>
+      </div>
+      
+      <div class="flex flex-col sm:flex-row justify-center gap-4">
+        <a 
+          href="/"
+          class="btn-orange text-white px-6 py-2.5 rounded-lg text-sm font-medium inline-flex items-center justify-center gap-2"
+        >
+          Return Home
+        </a>
+        <button 
+          onclick="history.back()"
+          class="px-6 py-2.5 rounded-lg text-sm font-medium bg-white/[0.03] hover:bg-white/[0.06] transition-colors"
+        >
+          Go Back
+        </button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

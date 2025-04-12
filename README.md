@@ -1,35 +1,44 @@
-# NX Content Tracker
+# NX Content Database
 
-A modern web application for tracking Nintendo Switch content, built with React and TypeScript.
-
-https://github.com/user-attachments/assets/896af358-a0b1-4199-8da2-2d5dd26edd76
+A modern web application for tracking Nintendo Switch content preservation status, built with React, TypeScript, and Tailwind CSS.
 
 ## Features
 
 - 🎮 Track base games, updates, and DLC content
-- 🔍 Advanced search with configurable precision
-- 🌓 Dark/Light theme support
+- 📊 Real-time statistics and content overview
+- 🔄 Recent content updates tracking
+- 🔍 Advanced search and filtering capabilities
 - 📱 Fully responsive design
-- 📊 Detailed content information
-- 🖼️ Interactive screenshot gallery with advanced features:
-  - Zoom and rotation controls
-  - Slideshow mode
-  - Fullscreen support
-  - Keyboard shortcuts
-  - Touch gestures
-  - Image download
-- 📈 Download statistics integration
-- 🔄 Auto-refresh capabilities
-- ⚙️ Customizable display settings
+- 🖼️ Dynamic game banners and screenshots
+- 🎲 Random game discovery
+- 📋 Detailed game information including:
+  - Publisher details
+  - Release dates
+  - Game descriptions
+  - Available updates
+  - DLC content
+- 📊 Content statistics including:
+  - Total base games
+  - Available updates
+  - DLC content
+  - Total preserved data size
+
+## Technology Stack
+
+- **Frontend Framework**: React 18 with TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS with custom animations
+- **UI Components**: Custom components with Radix UI primitives
+- **Icons**: Lucide React
+- **Routing**: React Router
+- **Image Handling**: Embla Carousel
 
 ## Development
 
-This project uses:
-- Vite for blazing fast development
-- React 18 with TypeScript
-- Tailwind CSS for styling
-- Zustand for state management
-- Lucide for icons
+### Prerequisites
+
+- Node.js 18 or higher
+- npm or yarn
 
 ### Getting Started
 
@@ -47,34 +56,16 @@ npm run build
 npm run preview
 ```
 
-## Configuration
+### Project Structure
 
-The application supports various configuration options through the settings panel:
-
-- Search precision for names and Title IDs
-- Items per page
-- Content display limits
-- Auto-refresh intervals
-- Custom data source URLs
-
-## Gallery Controls
-
-The screenshot gallery supports various controls:
-- **Keyboard**:
-  - Arrow keys: Navigate between images
-  - R: Rotate image
-  - +/-: Zoom in/out
-  - F: Toggle fullscreen
-  - Space: Toggle slideshow
-  - ESC: Close gallery
-- **Mouse**:
-  - Click and drag to pan
-  - Mouse wheel to zoom
-  - Click outside to close
-- **Touch**:
-  - Swipe to navigate
-  - Pinch to zoom
-  - Double tap to toggle zoom
+```
+src/
+├── components/     # Reusable UI components
+├── hooks/         # Custom React hooks
+├── lib/           # Utility functions and types
+├── pages/         # Main application pages
+└── styles/        # Global styles and Tailwind config
+```
 
 ## Contributing
 
@@ -90,6 +81,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- Data provided by [nlib.cc](https://nlib.cc)
-- Icons by [Lucide](https://lucide.dev)
-- Stats by [ghostland.at](https://stats.ghostland.at)
+- Game data and icons provided by [nlib.cc](https://nlib.cc)
+- Additional data from [ghostland.at](https://ghostland.at)

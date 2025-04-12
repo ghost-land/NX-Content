@@ -2,30 +2,132 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: light;
-  --background: 255 255 255;
-  --foreground: 15 23 42;
-  --muted: 241 245 249;
-  --muted-foreground: 100 116 139;
-  --card: 255 255 255;
-  --card-foreground: 15 23 42;
-  --border: 226 232 240;
-  --primary: 37 99 235;
-  --primary-foreground: 255 255 255;
+@layer base {
+  body {
+    background: radial-gradient(circle at 0% 0%, rgba(255, 97, 0, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 100% 0%, rgba(255, 97, 0, 0.12) 0%, transparent 50%),
+                linear-gradient(180deg, #111827 0%, #1e1b18 100%);
+    @apply text-white/90 selection:bg-orange-500/20 selection:text-orange-200;
+  }
 }
 
-:root[class~="dark"] {
-  color-scheme: dark;
-  --background: 15 23 42;
-  --foreground: 226 232 240;
-  --muted: 30 41 59;
-  --muted-foreground: 148 163 184;
-  --card: 30 41 59;
-  --card-foreground: 226 232 240;
-  --border: 51 65 85;
-  --primary: 59 130 246;
-  --primary-foreground: 255 255 255;
+@layer components {
+  .card-glass {
+    @apply bg-gradient-to-b from-white/[0.08] to-white/[0.04] 
+           backdrop-blur-md 
+           rounded-2xl 
+           transition-all duration-300 
+           shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_4px_20px_rgba(0,0,0,0.1)];
+  }
+
+  .btn-orange {
+    @apply relative overflow-hidden
+           text-white px-6 py-2.5 rounded-lg text-sm
+           transition-all duration-300 ease-out
+           focus:ring-2 focus:ring-orange-500/50 focus:outline-none 
+           shadow-[0_0_20px_rgba(234,88,12,0.2)] hover:shadow-[0_0_25px_rgba(234,88,12,0.3)]
+           hover:scale-[1.02] active:scale-[0.98]
+           before:absolute before:inset-0 
+           before:bg-gradient-to-r before:from-orange-500 before:to-orange-600
+           after:absolute after:inset-0 
+           after:bg-gradient-to-r after:from-orange-600 after:to-orange-700
+           after:opacity-0 hover:after:opacity-100
+           after:transition-opacity after:duration-300;
+  }
+
+  .btn-orange > div {
+    @apply relative z-10 flex items-center justify-center tracking-wide;
+  }
+
+  .btn-orange.glass {
+    @apply before:bg-gradient-to-r before:from-white/10 before:to-white/5
+           after:bg-gradient-to-r after:from-white/15 after:to-white/10
+           hover:bg-white/5;
+  }
+
+  .btn-orange.glass:hover {
+    @apply shadow-[0_0_25px_rgba(255,255,255,0.1)];
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-orange-300 to-orange-400 bg-clip-text text-transparent;
+  }
+
+  .heading-1 {
+    @apply text-2xl sm:text-3xl font-medium;
+  }
+
+  .heading-2 {
+    @apply text-xl sm:text-2xl font-medium;
+  }
+
+  .body-text {
+    @apply text-base sm:text-lg text-white/70;
+  }
+
+  .small-text {
+    @apply text-sm text-white/60;
+  }
+}
+
+:root {
+  @apply font-sans antialiased;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
 }
 
 @layer base {
@@ -33,75 +135,43 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
-}
-
-.icon-container {
-  @apply relative w-16 h-16 flex-shrink-0;
-}
-
-.icon-container img {
-  @apply absolute inset-0 w-full h-full object-cover rounded-lg;
-  aspect-ratio: 1/1;
-}
-
-/* Mobile optimizations */
-@media (max-width: 640px) {
-  .icon-container {
-    @apply w-12 h-12;
+    @apply bg-background text-foreground;
   }
 
-  .content-table th,
-  .content-table td {
-    @apply px-2 py-2 text-sm;
+  /* Custom select styling */
+  [data-radix-select-trigger] {
+    @apply transition-colors duration-200;
   }
-
-  .content-table th:not(:first-child):not(:last-child),
-  .content-table td:not(:first-child):not(:last-child) {
-    @apply hidden;
+  
+  [data-radix-select-trigger][data-state="open"] {
+    @apply bg-orange-500/20 ring-2 ring-orange-500/30;
   }
-
-  .pagination-controls {
-    @apply flex-col space-y-2;
+  
+  [data-radix-select-content] {
+    @apply bg-zinc-900/95 backdrop-blur-lg border border-white/10 shadow-xl 
+           animate-in fade-in-0 zoom-in-95 duration-200;
   }
-
-  .pagination-controls select {
-    @apply w-full;
+  
+  [data-radix-select-item] {
+    @apply relative flex items-center px-8 py-2 text-sm text-white/90
+           outline-none transition-colors duration-200
+           data-[highlighted]:bg-orange-500/20 data-[highlighted]:text-orange-200
+           data-[state=checked]:text-orange-400
+           data-[state=checked]:bg-orange-500/10;
   }
-
-  .search-bar {
-    @apply flex-col space-y-2;
+  
+  [data-radix-select-item]::before {
+    content: "";
+    @apply absolute left-2 w-4 h-4 rounded-full
+           border border-white/20
+           data-[state=checked]:bg-orange-500
+           data-[state=checked]:border-orange-500;
   }
-
-  .search-bar input {
-    @apply w-full;
+  
+  [data-radix-select-item]::after {
+    content: "✓";
+    @apply absolute left-[0.65rem] text-[0.7rem] text-white
+           opacity-0 transition-opacity duration-200
+           data-[state=checked]:opacity-100;
   }
-
-  .stats-grid {
-    @apply grid-cols-1 gap-2;
-  }
-}
-
-/* Tablet optimizations */
-@media (min-width: 641px) and (max-width: 1024px) {
-  .icon-container {
-    @apply w-14 h-14;
-  }
-
-  .content-table th,
-  .content-table td {
-    @apply px-3 py-3;
-  }
-
-  .stats-grid {
-    @apply grid-cols-2 gap-3;
-  }
-}
-
-/* Ensure content is always visible */
-.overflow-container {
-  @apply overflow-x-auto -mx-4 px-4;
-  -webkit-overflow-scrolling: touch;
 }

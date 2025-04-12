@@ -1,0 +1,17 @@
+{
+  "name": "NX Content Tracker",
+  "short_name": "NX Content",
+  "description": "Track and discover Nintendo Switch content preservation status",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

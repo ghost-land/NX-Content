@@ -1,217 +1,335 @@
-import { useEffect, useState } from 'react';
-import { ContentItem } from './types';
-import { ContentTable } from './components/ContentTable';
-import { TabNavigation } from './components/TabNavigation';
-import { Header } from './components/Header';
-import { SearchBar } from './components/SearchBar';
-import { logger } from './utils/logger';
-import { useSearch } from './hooks/useSearch';
-import { useUserPreferences } from './store/userPreferences';
-import { sortByReleaseDate } from './utils/sorting';
-import { isValidDate } from './utils/dates';
-import packageJson from '../package.json';
+import { useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useState, useTransition, Suspense } from 'react';
+import type { ProcessedGame } from './lib/types';
+import { formatBytes, filterBaseGames, processGameDataInChunks } from './lib/format';
+import { processGameData, mergeGameData } from './lib/format';
+import { useCallback } from 'react';
+import { useDebounce } from './hooks/use-debounce';
+import { GameDetails } from './pages/GameDetails';
+import { getBaseTidForUpdate } from './lib/utils';
+import { HomePage } from './pages/HomePage';
+import { ContentList } from './pages/ContentList';
+import { fetchRecentGames, fetchRecentUpdates, fetchRecentDLCs, fetchGameDetails } from './lib/api';
+import type { RecentGame } from './lib/types';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
-interface WorkingJsonItem {
-  "Game Name": string;
-  "Version": string;
-  "Size": number;
-}
-
-interface WorkingJson {
-  [key: string]: WorkingJsonItem;
-}
-
-export default function App() {
-  const { isDark, setDarkMode, itemsPerPage, lastActiveTab, setLastActiveTab } = useUserPreferences();
-  const [items, setItems] = useState<ContentItem[]>([]);
+function App() {
+  const [games, setGames] = useState<ProcessedGame[]>([]);
+  const [recentGames, setRecentGames] = useState<RecentGame[]>([]);
+  const [recentUpdates, setRecentUpdates] = useState<RecentGame[]>([]);
+  const [recentDLCs, setRecentDLCs] = useState<RecentGame[]>([]);
+  const [showAllUpdates, setShowAllUpdates] = useState(false);
+  const [showAllDLCs, setShowAllDLCs] = useState(false);
+  const [updatesSortConfig, setUpdatesSortConfig] = useState<{ key: keyof RecentGame; direction: 'asc' | 'desc' }>({ key: 'date', direction: 'desc' });
+  const [dlcsSortConfig, setDlcsSortConfig] = useState<{ key: keyof RecentGame; direction: 'asc' | 'desc' }>({ key: 'date', direction: 'desc' });
+  const [isPending, startTransition] = useTransition();
+  const itemsPerPage = window.innerWidth < 640 ? 25 : 51;
+  
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const { 
-    nameQuery, 
-    setNameQuery, 
-    tidQuery, 
-    setTidQuery, 
-    results, 
-    sortField, 
-    sortDirection, 
-    toggleSort 
-  } = useSearch(items);
+  const [progress, setProgress] = useState(0);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [downloadSize, setDownloadSize] = useState<string>('');
+  const [stage, setStage] = useState<'downloading' | 'processing'>('downloading');
+  const [loadingText, setLoadingText] = useState('Loading database...');
+  
+  const getRandomBaseGame = useCallback(() => {
+    const baseGames = games.filter(game => game.tid.endsWith('000'));
+    if (baseGames.length === 0) return null;
+    const randomIndex = Math.floor(Math.random() * baseGames.length);
+    return baseGames[randomIndex];
+  }, [games]);
+  
+  // URL Search Params
+  const [searchParams, setSearchParams] = useSearchParams({
+    page: '1',
+    sort: 'name',
+    order: 'asc',
+    type: 'base', 
+    search: '',
+    tid: '',
+    game: ''
+  });
+
+  const currentPage = parseInt(searchParams.get('page') || '1');
+  const sortBy = searchParams.get('sort') as 'name' | 'size' | 'date' || 'name';
+  const sortOrder = searchParams.get('order') as 'asc' | 'desc' || 'asc';
+  const filterType = searchParams.get('type') as 'all' | 'base' | 'update' | 'dlc' || 'base';
+  const viewMode = searchParams.get('display') as 'banner' | 'grid' || 'grid';
+  
+  // Local state for input values
+  const [nameInput, setNameInput] = useState(searchParams.get('search') || '');
+  const [tidInput, setTidInput] = useState(searchParams.get('tid') || '');
+  
+  const debouncedName = useDebounce(nameInput, 300);
+  const debouncedTid = useDebounce(tidInput, 300);
+
+  // Update URL when debounced values change
+  useEffect(() => {
+    updateSearchParams({ 
+      search: debouncedName,
+      tid: debouncedTid,
+      page: '1'
+    });
+  }, [debouncedName, debouncedTid]);
+
+  // Update URL params when filters change
+  const updateSearchParams = (updates: Record<string, string>) => {
+    const newParams = new URLSearchParams(searchParams);
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value) {
+        newParams.set(key, value);
+      } else {
+        newParams.delete(key);
+      }
+    });
+    setSearchParams(newParams);
+  };
 
   useEffect(() => {
-    const root = document.documentElement;
-    if (isDark) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
+    // Reset page when search changes
+    updateSearchParams({ page: '1' });
+  }, [debouncedName, debouncedTid]);
+
+  const filteredGames = useMemo(() => {
+    let filtered = filterType === 'all' ? games : games.filter(game => game.type === filterType);
+    
+    if (debouncedName) {
+      const searchLower = debouncedName.toLowerCase();
+      filtered = filtered.filter(game => 
+        game.name.toLowerCase().includes(searchLower)
+      );
     }
-  }, [isDark]);
+    
+    if (debouncedTid) {
+      const searchLower = debouncedTid.toLowerCase();
+      filtered = filtered.filter(game => 
+        game.tid.toLowerCase().includes(searchLower)
+      );
+    }
 
+    // Sort the filtered results
+    const sorted = [...filtered].sort((a, b) => {
+      if (sortBy === 'name') {
+        return sortOrder === 'asc' 
+          ? a.name.localeCompare(b.name)
+          : b.name.localeCompare(a.name);
+      } else if (sortBy === 'size') {
+        return sortOrder === 'asc'
+          ? a.size - b.size
+          : b.size - a.size;
+      }
+      return 0;
+    });
+    
+    return sorted;
+  }, [games, filterType, debouncedName, debouncedTid, sortBy, sortOrder]);
+
+  const paginatedGames = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredGames.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredGames, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredGames.length / itemsPerPage);
+
+  // Update itemsPerPage when window size changes
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        logger.info('Starting data load');
-
-        const [workingResponse, titlesResponse, workingJsonResponse] = await Promise.all([
-          fetch('https://raw.githubusercontent.com/ghost-land/NX-Missing/refs/heads/main/data/working.txt'),
-          fetch('https://raw.githubusercontent.com/ghost-land/NX-Missing/refs/heads/main/data/titles_db.txt'),
-          fetch('https://raw.githubusercontent.com/ghost-land/NX-Missing/refs/heads/main/data/working.json')
-        ]);
-
-        const [workingText, titlesText] = await Promise.all([
-          workingResponse.text(),
-          titlesResponse.text()
-        ]);
-
-        const workingJson: WorkingJson = await workingJsonResponse.json();
-
-        // Process titles database
-        const titlesMap = new Map(titlesText.trim().split('\n').map(line => {
-          const [id, date, name, size] = line.split('|');
-          return [id, { date, name, size: parseInt(size) }];
-        }));
-
-        // Process all items from working.txt
-        const processedItems = new Map<string, ContentItem>();
-
-        workingText.trim().split('\n').forEach(line => {
-          const [id, version] = line.split('|');
-          const type = id.endsWith('800') ? 'update' as const : 
-                      id.endsWith('000') ? 'base' as const : 'dlc' as const;
-          
-          const uniqueId = `${id}_${version || '0'}`;
-          const titleInfo = titlesMap.get(id);
-          const jsonInfo = workingJson[id];
-
-          if (!processedItems.has(uniqueId)) {
-            processedItems.set(uniqueId, {
-              id,
-              uniqueId,
-              type,
-              version: version || jsonInfo?.Version,
-              name: jsonInfo?.["Game Name"] || titleInfo?.name || 'Unknown Title',
-              size: titleInfo?.size || jsonInfo?.Size,
-              releaseDate: type === 'base' ? titleInfo?.date : undefined
-            });
-          }
-        });
-
-        const sortedItems = sortByReleaseDate(Array.from(processedItems.values()));
-        setItems(sortedItems);
-        
-        setLoading(false);
-        logger.info('Data load complete', { 
-          totalItems: sortedItems.length,
-          baseCount: sortedItems.filter(item => item.type === 'base').length,
-          updateCount: sortedItems.filter(item => item.type === 'update').length,
-          dlcCount: sortedItems.filter(item => item.type === 'dlc').length,
-          withDatesCount: sortedItems.filter(item => isValidDate(item.releaseDate)).length,
-          withoutDatesCount: sortedItems.filter(item => !isValidDate(item.releaseDate)).length
-        });
-      } catch (error) {
-        logger.error('Failed to load content data', { 
-          errorMessage: error instanceof Error ? error.message : 'Unknown error'
-        });
-        setLoading(false);
-        throw new Error('Failed to load content data');
+    const handleResize = () => {
+      const newItemsPerPage = window.innerWidth < 640 ? 25 : 51;
+      if (newItemsPerPage !== itemsPerPage) {
+        updateSearchParams({ page: '1' });
       }
     };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [itemsPerPage]);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        // Download both files in parallel
+        setLoadingText('Downloading databases...');
+        const [jsonResponse, txtResponse] = await Promise.all([
+          fetch('https://nx-missing.ghostland.at/data/working.json'),
+          fetch('https://nx-missing.ghostland.at/data/working.txt')
+        ]);
+
+        // Process JSON data
+        const jsonData = await jsonResponse.json();
+
+        // Process TXT data
+        const txtData = await txtResponse.text();
+        const txtEntries = txtData.split('\n')
+          .filter(line => line.trim())
+          .map(line => {
+            const [tid, version] = line.split('|');
+            return { tid, version };
+          });
+
+        // Merge and process the data
+        setStage('processing');
+        setLoadingText('Processing data...');
+        const mergedData = mergeGameData(jsonData, txtEntries);
+        const processedGames = processGameData(mergedData);
+        setGames(processedGames);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading games:', error);
+        setLoading(false);
+      }
+    }
 
     loadData();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="fixed inset-0 bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading games...</p>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    async function loadRecentGames() {
+      try {
+        const data = await fetchRecentGames();
+        setRecentGames(data);
+      } catch (error) {
+        console.error('Error loading recent games:', error);
+      }
+    }
+    loadRecentGames();
+  }, []);
 
-  const counts = {
-    base: items.filter(item => item.type === 'base').length,
-    update: items.filter(item => item.type === 'update').length,
-    dlc: items.filter(item => item.type === 'dlc').length
+  useEffect(() => {
+    async function loadRecentContent() {
+      try {
+        const [updates, dlcs] = await Promise.all([
+          fetchRecentUpdates(),
+          fetchRecentDLCs()
+        ]);
+        setRecentUpdates(updates);
+        setRecentDLCs(dlcs);
+      } catch (error) {
+        console.error('Error loading recent content:', error);
+      }
+    }
+    loadRecentContent();
+  }, []);
+
+  const sortedUpdates = useMemo(() => {
+    const sorted = [...recentUpdates].sort((a, b) => {
+      if (updatesSortConfig.key === 'date') {
+        return updatesSortConfig.direction === 'asc' 
+          ? a.date.getTime() - b.date.getTime()
+          : b.date.getTime() - a.date.getTime();
+      }
+      if (updatesSortConfig.key === 'title') {
+        return updatesSortConfig.direction === 'asc'
+          ? a.title.localeCompare(b.title)
+          : b.title.localeCompare(a.title);
+      }
+      if (updatesSortConfig.key === 'version') {
+        return updatesSortConfig.direction === 'asc'
+          ? a.version.localeCompare(b.version, undefined, { numeric: true })
+          : b.version.localeCompare(a.version, undefined, { numeric: true });
+      }
+      return 0;
+    });
+    return sorted;
+  }, [recentUpdates, updatesSortConfig]);
+
+  const sortedDLCs = useMemo(() => {
+    const sorted = [...recentDLCs].sort((a, b) => {
+      if (dlcsSortConfig.key === 'date') {
+        return dlcsSortConfig.direction === 'asc'
+          ? a.date.getTime() - b.date.getTime()
+          : b.date.getTime() - a.date.getTime();
+      }
+      if (dlcsSortConfig.key === 'title') {
+        return dlcsSortConfig.direction === 'asc'
+          ? a.title.localeCompare(b.title)
+          : b.title.localeCompare(a.title);
+      }
+      if (dlcsSortConfig.key === 'version') {
+        return dlcsSortConfig.direction === 'asc'
+          ? a.version.localeCompare(b.version, undefined, { numeric: true })
+          : b.version.localeCompare(a.version, undefined, { numeric: true });
+      }
+      return 0;
+    });
+    return sorted;
+  }, [recentDLCs, dlcsSortConfig]);
+
+  const handleSort = (table: 'updates' | 'dlcs', key: keyof RecentGame) => {
+    if (table === 'updates') {
+      setUpdatesSortConfig(current => ({
+        key,
+        direction: current.key === key && current.direction === 'asc' ? 'desc' : 'asc'
+      }));
+    } else {
+      setDlcsSortConfig(current => ({
+        key,
+        direction: current.key === key && current.direction === 'asc' ? 'desc' : 'asc'
+      }));
+    }
   };
 
-  const filteredItems = results.filter(item => item.type === lastActiveTab);
-  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
-  const paginatedItems = filteredItems.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header onToggleTheme={() => setDarkMode(!isDark)} />
-      
-      <main className="flex-1 max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="w-full rounded-lg p-4 border bg-card border-border text-foreground select-none">
-            <h3 className="text-sm font-medium text-muted-foreground">Base Games</h3>
-            <p className="mt-2 text-3xl font-bold">
-              {counts.base.toLocaleString()}
-            </p>
-          </div>
-          <div className="w-full rounded-lg p-4 border bg-card border-border text-foreground select-none">
-            <h3 className="text-sm font-medium text-muted-foreground">Updates</h3>
-            <p className="mt-2 text-3xl font-bold">
-              {counts.update.toLocaleString()}
-            </p>
-          </div>
-          <div className="w-full rounded-lg p-4 border bg-card border-border text-foreground select-none">
-            <h3 className="text-sm font-medium text-muted-foreground">DLCs</h3>
-            <p className="mt-2 text-3xl font-bold">
-              {counts.dlc.toLocaleString()}
-            </p>
+    <ErrorBoundary>
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="w-10 h-10 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin" />
+            <p className="text-white/70">Loading application...</p>
           </div>
         </div>
-
-        <div className="space-y-4">
-          <SearchBar 
-            nameQuery={nameQuery}
-            tidQuery={tidQuery}
-            onNameChange={setNameQuery}
-            onTidChange={setTidQuery}
-          />
-
-          <TabNavigation
-            activeTab={lastActiveTab}
-            onTabChange={setLastActiveTab}
-            counts={counts}
-          />
-
-          <ContentTable
-            items={paginatedItems}
-            allItems={items}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            sortField={sortField}
-            sortDirection={sortDirection}
-            onSort={toggleSort}
-          />
-        </div>
-      </main>
-
-      <footer className="border-t border-border py-4 px-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="text-xs text-muted-foreground">
-            Version {packageJson.version}
-          </div>
-          <a
-            href="https://github.com/ghost-land/NX-Content"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            View on GitHub
-          </a>
-        </div>
-      </footer>
-    </div>
+      }>
+      {searchParams.get('game') ? (
+        <GameDetails 
+          games={games} 
+          tid={getBaseTidForUpdate(searchParams.get('game')!)} 
+        />
+      ) : searchParams.get('view') === 'content' ? (
+        <ContentList
+          games={games}
+          loading={loading}
+          nameInput={nameInput}
+          tidInput={tidInput}
+          filterType={filterType}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          viewMode={viewMode}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          paginatedGames={paginatedGames}
+          filteredGames={filteredGames}
+          onNameInputChange={setNameInput}
+          onTidInputChange={setTidInput}
+          updateSearchParams={updateSearchParams}
+          getRandomBaseGame={getRandomBaseGame}
+        />
+      ) : (
+        <HomePage
+          loading={loading}
+          loadingText={loadingText}
+          stage={stage}
+          progress={progress}
+          processingProgress={processingProgress}
+          downloadSize={downloadSize}
+          games={games}
+          recentGames={recentGames}
+          recentUpdates={sortedUpdates}
+          recentDLCs={sortedDLCs}
+          showAllUpdates={showAllUpdates}
+          showAllDLCs={showAllDLCs}
+          updatesSortConfig={updatesSortConfig}
+          dlcsSortConfig={dlcsSortConfig}
+          onUpdatesSortChange={(key) => handleSort('updates', key)}
+          onDLCSortChange={(key) => handleSort('dlcs', key)}
+          onShowAllUpdatesChange={setShowAllUpdates}
+          onShowAllDLCsChange={setShowAllDLCs}
+          onGameSelect={(tid) => updateSearchParams({ game: tid })}
+          getRandomBaseGame={getRandomBaseGame}
+          updateSearchParams={updateSearchParams}
+        />
+      )}
+      </Suspense>
+    </ErrorBoundary>
   );
 }
+
+export default App
