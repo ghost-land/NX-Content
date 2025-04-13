@@ -16,6 +16,7 @@ A modern web application for tracking Nintendo Switch content preservation statu
 - 📱 Fully responsive design
 - 🖼️ Dynamic game banners and screenshots
 - 🎲 Random game discovery
+   - Use `/?random=random` URL parameter to view a random game
 - 📋 Detailed game information including:
   - Publisher details
   - Release dates
@@ -60,6 +61,14 @@ npm run build
 # Preview production build
 npm run preview
 ```
+
+### URL Parameters
+
+The application supports various URL parameters for navigation and filtering:
+
+- `/?random=random` - Display a random game from the database
+- `/?game=<tid>` - Display details for a specific game by Title ID
+- `/?view=content` - Access the content browser view
 
 ### Project Structure
 
