@@ -1,9 +1,8 @@
 import { useSearchParams } from 'react-router-dom';
-import { useEffect, useMemo, useState, useTransition, Suspense } from 'react';
+import { useEffect, useMemo, useState, useTransition, Suspense, useCallback } from 'react';
 import type { ProcessedGame } from './lib/types';
 import { formatBytes, filterBaseGames, processGameDataInChunks } from './lib/format';
 import { processGameData, mergeGameData } from './lib/format';
-import { useCallback } from 'react';
 import { useDebounce } from './hooks/use-debounce';
 import { GameDetails } from './pages/GameDetails';
 import { getBaseTidForUpdate } from './lib/utils';
@@ -14,6 +13,7 @@ import type { RecentGame } from './lib/types';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 function App() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [games, setGames] = useState<ProcessedGame[]>([]);
   const [recentGames, setRecentGames] = useState<RecentGame[]>([]);
   const [recentUpdates, setRecentUpdates] = useState<RecentGame[]>([]);
@@ -25,6 +25,27 @@ function App() {
   const [isPending, startTransition] = useTransition();
   const itemsPerPage = window.innerWidth < 640 ? 25 : 51;
   
+  // Get random base game function
+  const getRandomBaseGame = useCallback(() => {
+    const baseGames = games.filter(game => game.tid.endsWith('000'));
+    if (baseGames.length === 0) return null;
+    const randomIndex = Math.floor(Math.random() * baseGames.length);
+    return baseGames[randomIndex];
+  }, [games]);
+  
+  // Handle random parameter
+  useEffect(() => {
+    if (searchParams.get('random') === 'random') {
+      const randomGame = getRandomBaseGame();
+      if (randomGame) {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('random');
+        newParams.set('game', randomGame.tid);
+        setSearchParams(newParams);
+      }
+    }
+  }, [searchParams, games, getRandomBaseGame, setSearchParams]);
+  
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [processingProgress, setProcessingProgress] = useState(0);
@@ -32,15 +53,6 @@ function App() {
   const [stage, setStage] = useState<'downloading' | 'processing'>('downloading');
   const [loadingText, setLoadingText] = useState('Loading database...');
   
-  // URL Search Params - Only used for content list view
-  const getRandomBaseGame = useCallback(() => {
-    const baseGames = games.filter(game => game.tid.endsWith('000'));
-    if (baseGames.length === 0) return null;
-    const randomIndex = Math.floor(Math.random() * baseGames.length);
-    return baseGames[randomIndex];
-  }, [games]);
-
-  const [searchParams, setSearchParams] = useSearchParams();
   const isContentView = searchParams.get('view') === 'content';
 
   // Initialize params only when in content view
@@ -56,7 +68,7 @@ function App() {
         tid: '',
       });
     }
-  }, [isContentView]);
+  }, [isContentView, searchParams, setSearchParams]);
 
   const currentPage = parseInt(searchParams.get('page') || '1');
   const sortBy = searchParams.get('sort') as 'name' | 'size' | 'date' || 'name';

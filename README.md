@@ -1,5 +1,10 @@
 # NX Content Database
 
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Version](https://img.shields.io/badge/Version-4.1.3-blue)](https://github.com/ghost-land/NX-Content/releases)
+[![GitHub issues](https://img.shields.io/github/issues/ghost-land/NX-Content)](https://github.com/ghost-land/NX-Content/issues)
+[![GitHub stars](https://img.shields.io/github/stars/ghost-land/NX-Content)](https://github.com/ghost-land/NX-Content/stargazers)
+
 A modern web application for tracking Nintendo Switch content preservation status, built with React, TypeScript, and Tailwind CSS.
 
 ## Features
@@ -77,7 +82,11 @@ src/
 
 ## License
 
-This project is licensed under the GPL-3.0 License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 ## Acknowledgments
 
