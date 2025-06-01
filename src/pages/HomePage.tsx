@@ -267,7 +267,7 @@ export function HomePage({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {(showAllDLCs ? recentDLCs : recentDLCs.slice(0, 5)).map((dlc) => (
+                  {(showAllDLCs ? recentDLCs : recentDLCs.slice(0, 8)).map((dlc) => (
                     <TableRow 
                       key={dlc.tid}
                       className="cursor-pointer hover:bg-white/[0.03]"
@@ -281,7 +281,7 @@ export function HomePage({
                   ))}
                 </TableBody>
               </Table>
-              {recentDLCs.length > 5 && (
+              {recentDLCs.length > 8 && (
                 <button
                   onClick={() => onShowAllDLCsChange(!showAllDLCs)}
                   className="w-full py-2 px-4 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] transition-colors text-white/90 hover:text-white"
