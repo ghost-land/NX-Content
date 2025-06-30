@@ -1,3 +1,6 @@
+/**
+ * Raw game data structure from JSON database
+ */
 export interface GameData {
   "Game Name": string;
   Version: string;
@@ -5,12 +8,21 @@ export interface GameData {
   Size: number;
 }
 
+/**
+ * Complete games database structure
+ */
 export interface GamesData {
   [tid: string]: GameData;
 }
 
+/**
+ * Content type classification
+ */
 export type ContentType = 'base' | 'update' | 'dlc';
 
+/**
+ * Processed game information with formatted data
+ */
 export interface ProcessedGame {
   tid: string;
   name: string;
@@ -21,6 +33,9 @@ export interface ProcessedGame {
   sizeFormatted: string;
 }
 
+/**
+ * Recent content information from RSS feeds
+ */
 export interface RecentGame {
   title: string;
   tid: string;
@@ -30,4 +45,19 @@ export interface RecentGame {
   format: string;
   date: Date;
   iconUrl: string;
+}
+
+/**
+ * Detailed game information from external API
+ */
+export interface GameDetails {
+  publisher: string;
+  releaseDate: string;
+  description: string;
+  numberOfPlayers: string;
+  languages: string[];
+  category: string[];
+  screens: {
+    screenshots: string[];
+  };
 }

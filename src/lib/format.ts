@@ -1,3 +1,11 @@
+import type { ProcessedGame, GamesData } from './types';
+
+/**
+ * Formats bytes into human-readable string with appropriate units
+ * 
+ * @param bytes - Number of bytes to format
+ * @returns Formatted string (e.g., "1.25 GB")
+ */
 export function formatBytes(bytes: number): string {
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   let size = bytes;
@@ -11,20 +19,39 @@ export function formatBytes(bytes: number): string {
   return `${size.toFixed(2)} ${units[unitIndex]}`;
 }
 
+/**
+ * Determines the content type based on Title ID pattern
+ * 
+ * @param tid - Title ID to analyze
+ * @returns Content type: 'base' for games ending in '000', 'update' for '800', 'dlc' for others
+ */
 export function getContentType(tid: string): 'base' | 'update' | 'dlc' {
   if (tid.endsWith('000')) return 'base';
   if (tid.endsWith('800')) return 'update';
   return 'dlc';
 }
 
+/**
+ * Filters games array to return only base games
+ * 
+ * @param games - Array of processed games
+ * @returns Array containing only base games
+ */
 export function filterBaseGames(games: ProcessedGame[]): ProcessedGame[] {
   return games.filter(game => game.type === 'base');
 }
 
+/**
+ * Retrieves related content (updates and DLCs) for a specific base game
+ * 
+ * @param games - Array of all processed games
+ * @param baseTid - Base Title ID to find related content for
+ * @returns Object containing arrays of updates and DLCs, sorted appropriately
+ */
 export function getRelatedContent(games: ProcessedGame[], baseTid: string) {
   const baseId = baseTid.slice(0, 12);
   
-  // Only get updates that have an updateVersion (from TXT file)
+  // Filter updates that have an updateVersion (from TXT file)
   const updates = games.filter(game => 
     game.tid.startsWith(baseId) && 
     game.type === 'update' &&
@@ -32,7 +59,7 @@ export function getRelatedContent(games: ProcessedGame[], baseTid: string) {
   )
     .sort((a, b) => (b.updateVersion || 0) - (a.updateVersion || 0));
   
-  // Get DLCs from games array
+  // Filter DLCs for the same base game
   const dlcs = games.filter(game => 
     game.tid.slice(0, 12) === baseId && 
     game.tid !== baseTid && 
@@ -45,16 +72,24 @@ export function getRelatedContent(games: ProcessedGame[], baseTid: string) {
   };
 }
 
+/**
+ * Processes raw game data into structured ProcessedGame objects
+ * Handles different content types and formats data appropriately
+ * 
+ * @param data - Raw games data from JSON database
+ * @returns Array of processed game objects
+ */
 export function processGameData(data: GamesData): ProcessedGame[] {
   const entries = Object.entries(data);
   const result: ProcessedGame[] = [];
   
   for (let i = 0; i < entries.length; i++) {
     const [tid, game] = entries[i];
-    const type = getContentType(tid.split('_')[0]); // Remove index for update TIDs
+    const cleanTid = tid.split('_')[0]; // Remove index for update TIDs
+    const type = getContentType(cleanTid);
     
     result.push({
-      tid: tid.split('_')[0], // Remove index for update TIDs
+      tid: cleanTid,
       name: game["Game Name"],
       version: type === 'update' ? game["Update Version"]?.toString() || game.Version : game.Version,
       updateVersion: game["Update Version"],
@@ -67,13 +102,21 @@ export function processGameData(data: GamesData): ProcessedGame[] {
   return result;
 }
 
+/**
+ * Merges JSON and TXT data sources into a unified dataset
+ * Handles multiple update versions from TXT file and creates unique entries
+ * 
+ * @param jsonData - Game data from JSON source
+ * @param txtEntries - Update data from TXT source
+ * @returns Merged and processed game data
+ */
 export function mergeGameData(jsonData: GamesData, txtEntries: { tid: string; version: string }[]): GamesData {
   const mergedData = { ...jsonData };
   
   // Group updates by TID to handle multiple versions
   const updatesByTid = new Map<string, string[]>();
   
-  // Process TXT entries
+  // Process TXT entries and group by TID
   txtEntries.forEach(({ tid, version }) => {
     if (tid.endsWith('800')) {
       if (!updatesByTid.has(tid)) {
@@ -83,16 +126,16 @@ export function mergeGameData(jsonData: GamesData, txtEntries: { tid: string; ve
     }
   });
   
-  // Add all updates to merged data
+  // Add all updates to merged data with unique identifiers
   updatesByTid.forEach((versions, tid) => {
-    // Sort versions in descending order
+    // Sort versions in descending order (newest first)
     versions.sort((a, b) => {
       const vA = parseInt(a) || 0;
       const vB = parseInt(b) || 0;
       return vB - vA;
     });
     
-    // Create an entry for each version
+    // Create an entry for each version with unique TID
     versions.forEach((version, index) => {
       const updateTid = `${tid}_${index}`; // Add index to make unique TIDs
       mergedData[updateTid] = {
@@ -107,6 +150,14 @@ export function mergeGameData(jsonData: GamesData, txtEntries: { tid: string; ve
   return mergedData;
 }
 
+/**
+ * Processes game data in chunks to prevent UI blocking during large dataset processing
+ * Reports progress to allow for progress indicators
+ * 
+ * @param data - Raw games data to process
+ * @param onProgress - Callback function to report processing progress (0-100)
+ * @returns Promise resolving to array of processed games
+ */
 export async function processGameDataInChunks(data: GamesData, onProgress: (progress: number) => void): Promise<ProcessedGame[]> {
   const entries = Object.entries(data);
   const chunkSize = 500;
@@ -117,7 +168,7 @@ export async function processGameDataInChunks(data: GamesData, onProgress: (prog
   for (let i = 0; i < entries.length; i += chunkSize) {
     const chunk = entries.slice(i, i + chunkSize);
     
-    // Process chunk
+    // Process current chunk
     for (const [tid, game] of chunk) {
       processedGames.push({
         tid,
@@ -129,7 +180,7 @@ export async function processGameDataInChunks(data: GamesData, onProgress: (prog
       });
     }
     
-    // Report progress less frequently to reduce UI updates
+    // Report progress with throttling to prevent excessive UI updates
     const now = Date.now();
     if (now - lastProgressReport > 100) { // Update every 100ms max
       const progress = Math.min((i + chunkSize) / totalEntries * 100, 100);

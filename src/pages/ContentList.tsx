@@ -33,6 +33,28 @@ interface ContentListProps {
   getRandomBaseGame: () => ProcessedGame | null;
 }
 
+/**
+ * ContentList component displays a searchable and filterable list of all games
+ * Provides advanced filtering, sorting, and pagination capabilities
+ * Supports both banner and grid view modes for different user preferences
+ * 
+ * @param games - Array of all available games
+ * @param loading - Whether the content is currently loading
+ * @param nameInput - Current search input for game names
+ * @param tidInput - Current search input for title IDs
+ * @param filterType - Current filter type (all/base/update/dlc)
+ * @param sortBy - Current sort field (name/size/date)
+ * @param sortOrder - Current sort direction (asc/desc)
+ * @param viewMode - Current display mode (banner/grid)
+ * @param currentPage - Current page number for pagination
+ * @param totalPages - Total number of pages
+ * @param paginatedGames - Games for current page
+ * @param filteredGames - Games after filtering
+ * @param onNameInputChange - Callback for name search input changes
+ * @param onTidInputChange - Callback for TID search input changes
+ * @param updateSearchParams - Callback to update URL search parameters
+ * @param getRandomBaseGame - Function to get a random base game
+ */
 export function ContentList({
   games,
   loading,
@@ -56,6 +78,7 @@ export function ContentList({
   return (
     <div ref={contentRef} className="min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header with title and navigation buttons */}
         <header className="card-glass p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
@@ -95,8 +118,10 @@ export function ContentList({
           </div>
         </header>
 
+        {/* Search and filter controls */}
         <div className="card-glass p-6">
           <div className="space-y-4">
+            {/* Search inputs for name and TID */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm text-white/80 font-medium">Search by Name</label>
@@ -127,7 +152,7 @@ export function ContentList({
             </div>
             
             <div className="pt-4 border-t border-white/10">
-              {/* Mobile Filters */}
+              {/* Mobile filter controls - compact layout for small screens */}
               <div className="sm:hidden space-y-4">
                 <div className="grid grid-cols-4 gap-1 p-1 bg-white/[0.03] rounded-lg">
                   {['all', 'base', 'update', 'dlc'].map((type) => (

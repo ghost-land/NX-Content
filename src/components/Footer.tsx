@@ -1,10 +1,16 @@
 import { Github } from 'lucide-react';
 
+/**
+ * Footer component displays the application footer with links and version info
+ * Contains legal links, project links, and version information
+ * Provides navigation to external resources and project information
+ */
 export function Footer() {
   return (
     <footer className="mt-16 py-8 border-t border-white/10">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
+          {/* Legal and project links */}
           <div className="flex flex-wrap justify-center sm:justify-start items-center gap-3">
             <a
               href="https://ghostland.at/dmca/"
@@ -33,6 +39,7 @@ export function Footer() {
               Discover our other projects
             </a>
           </div>
+          {/* Version and repository information */}
           <div className="flex items-center gap-2 text-white/50">
             <span>v{import.meta.env.PACKAGE_VERSION}</span>
             <span className="text-white/30">•</span>

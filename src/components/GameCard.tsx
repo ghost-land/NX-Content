@@ -1,5 +1,6 @@
 import type { ProcessedGame } from '@/lib/types';
-import { getBaseTidForUpdate } from '@/lib/utils';
+import { getBaseTidForUpdate, getIconFallbackUrls, getBannerFallbackUrls } from '@/lib/utils';
+import { ImageWithFallback } from '@/components/ui/image-with-fallback';
 
 interface GameCardProps {
   game: ProcessedGame;
@@ -8,7 +9,20 @@ interface GameCardProps {
   games: ProcessedGame[];
 }
 
+/**
+ * GameCard component displays game information in either banner or grid view
+ * Shows game images, metadata, and availability indicators
+ * Supports lazy loading and fallback images for better performance
+ * 
+ * @param game - Game data to display
+ * @param viewMode - Display mode: 'banner' for large cards, 'grid' for compact view
+ * @param onClick - Callback function when card is clicked
+ * @param games - Array of all games for availability checking
+ */
 export function GameCard({ game, viewMode, onClick, games }: GameCardProps) {
+  const baseTid = getBaseTidForUpdate(game.tid);
+  
+  // Banner view: Large card with banner image and overlay information
   if (viewMode === 'banner') {
     return (
       <div
@@ -16,18 +30,18 @@ export function GameCard({ game, viewMode, onClick, games }: GameCardProps) {
         onClick={onClick}
       >
         <div className="aspect-[16/9] relative bg-black/20">
-          <img
-            src={`https://api.nlib.cc/nx/${getBaseTidForUpdate(game.tid)}/banner/720p`}
+          <ImageWithFallback
+            src={`https://api.nlib.cc/nx/${baseTid}/banner/720p`}
+            fallbackSrc={`https://api.nlib.cc/nx/${baseTid}/icon/256/256`}
+            fallbackSrcs={getBannerFallbackUrls(baseTid)}
             alt={game.name}
             className="w-full h-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = `https://api.nlib.cc/nx/${getBaseTidForUpdate(game.tid)}/icon/256/256`;
-              (e.target as HTMLImageElement).className = "w-full h-full object-contain p-8";
-            }}
+            fallbackClassName="w-full h-full object-contain p-8"
+            loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
           
-          {/* Update/DLC Indicators */}
+          {/* Content type indicators (Update/DLC/Available) */}
           <div className="absolute top-2 right-2 flex flex-wrap justify-end gap-2 max-w-[calc(100%-1rem)]">
             {game.type !== 'base' && (
               <span className="bg-orange-500/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
@@ -50,6 +64,7 @@ export function GameCard({ game, viewMode, onClick, games }: GameCardProps) {
             )}
           </div>
           
+          {/* Game information overlay */}
           <div className="absolute inset-x-0 bottom-0 p-4">
             <h3 className="font-medium text-lg text-white mb-2">{game.name}</h3>
             <div className="flex flex-wrap items-center gap-2">
@@ -76,16 +91,19 @@ export function GameCard({ game, viewMode, onClick, games }: GameCardProps) {
     );
   }
 
+  // Grid view: Compact card with icon and side information
   return (
     <div
       className="group rounded-lg overflow-hidden bg-white/[0.03] hover:bg-white/[0.06] transition-all cursor-pointer border border-white/5 hover:border-orange-500/20 flex gap-4 p-4"
       onClick={onClick}
     >
       <div className="w-24 h-24 flex-shrink-0 bg-black/20 rounded-lg overflow-hidden">
-        <img
-          src={`https://api.nlib.cc/nx/${getBaseTidForUpdate(game.tid)}/icon/256/256`}
+        <ImageWithFallback
+          src={`https://api.nlib.cc/nx/${baseTid}/icon/256/256`}
+          fallbackSrcs={getIconFallbackUrls(baseTid)}
           alt={game.name}
           className="w-full h-full object-contain p-2"
+          loading="lazy"
         />
       </div>
       <div className="flex flex-col flex-grow">

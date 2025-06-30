@@ -9,20 +9,42 @@ interface State {
   error: Error | null;
 }
 
+/**
+ * ErrorBoundary component that catches JavaScript errors in child components
+ * Displays a fallback UI when errors occur instead of crashing the entire app
+ * 
+ * @example
+ * ```tsx
+ * <ErrorBoundary>
+ *   <MyComponent />
+ * </ErrorBoundary>
+ * ```
+ */
 export class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
     error: null
   };
 
+  /**
+   * Static method called when an error occurs in a child component
+   * Updates state to indicate an error has occurred
+   */
   public static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
+  /**
+   * Lifecycle method called after an error has been thrown
+   * Logs error information for debugging purposes
+   */
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Uncaught error:', error, errorInfo);
   }
 
+  /**
+   * Renders either the children components or the error fallback UI
+   */
   public render() {
     if (this.state.hasError) {
       return (

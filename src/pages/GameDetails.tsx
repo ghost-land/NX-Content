@@ -2,12 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation, useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Download, FileUp, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import Autoplay from 'embla-carousel-autoplay';
-import type { GameDetails } from '@/lib/api';
+import type { GameDetails } from '@/lib/types';
 import type { ProcessedGame } from '@/lib/types';
 import { fetchGameDetails } from '@/lib/api';
 import { getRelatedContent } from '@/lib/format';
+import { getBaseTidForUpdate, getIconFallbackUrls, getBannerFallbackUrls } from '@/lib/utils';
 import { Footer } from '@/components/Footer';
 import { AnimatedDice } from '@/components/ui/animated-dice';
+import { ImageWithFallback } from '@/components/ui/image-with-fallback';
+import { LazyImage } from '@/components/ui/lazy-image';
 import {
   Carousel,
   CarouselContent,
@@ -21,18 +24,39 @@ interface GameDetailsProps {
   tid: string;
 }
 
+/**
+ * GameDetails component displays comprehensive information about a specific game
+ * Shows game banner, screenshots, details, and related content (updates/DLCs)
+ * Handles error states for invalid TIDs and missing games
+ * 
+ * @param games - Array of all available games
+ * @param tid - Title ID of the game to display
+ */
 export function GameDetails({ games, tid }: GameDetailsProps) {
+  // State for game details and loading
   const [details, setDetails] = useState<GameDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // UI state for content display
   const [showAllUpdates, setShowAllUpdates] = useState(false);
   const [showAllDLCs, setShowAllDLCs] = useState(false);
   const [showBackText, setShowBackText] = useState(true);
+  
+  // Navigation and routing
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const [isHovering, setIsHovering] = useState(false);
 
-  // Function to update search parameters
+  // Extract base TID for related content lookup
+  const baseTid = getBaseTidForUpdate(tid);
+
+  // Validate TID format (16 hex characters)
+  const isValidTid = /^[0-9A-Fa-f]{16}$/.test(tid);
+
+  /**
+   * Updates URL search parameters while preserving existing ones
+   */
   const updateSearchParams = (updates: Record<string, string>) => {
     const newParams = new URLSearchParams(searchParams);
     Object.entries(updates).forEach(([key, value]) => {
@@ -45,10 +69,11 @@ export function GameDetails({ games, tid }: GameDetailsProps) {
     setSearchParams(newParams);
   };
 
+  // Find the target game and its related content
   const game = games.find(g => g.tid === tid);
   const relatedContent = game ? getRelatedContent(games, game.tid) : null;
 
-  // Handle scroll behavior
+  // Handle scroll behavior for back button text visibility
   useEffect(() => {
     const handleScroll = () => {
       setShowBackText(window.scrollY < 100);
@@ -58,14 +83,15 @@ export function GameDetails({ games, tid }: GameDetailsProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Scroll to top when the component mounts or location changes
+  // Scroll to top when component mounts or location changes
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location]);
 
+  // Load game details from external API
   useEffect(() => {
     async function loadDetails() {
-      if (!tid) return;
+      if (!tid || !isValidTid) return;
       
       try {
         setLoading(true);
@@ -81,15 +107,95 @@ export function GameDetails({ games, tid }: GameDetailsProps) {
     }
 
     loadDetails();
-  }, [tid]);
+  }, [tid, isValidTid]);
+
+  // Render error page for invalid TID format
+  if (!isValidTid) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="card-glass p-8 max-w-md w-full text-center space-y-6">
+          <div className="w-16 h-16 mx-auto bg-red-500/20 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-white mb-2">Invalid Title ID</h2>
+            <p className="text-white/70 mb-4">
+              The Title ID <code className="bg-white/10 px-2 py-1 rounded text-sm">{tid}</code> is not in the correct format.
+            </p>
+            <p className="text-white/60 text-sm">
+              A valid Title ID should be 16 hexadecimal characters (0-9, A-F).
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link 
+              to="/" 
+              className="btn-orange flex-1 flex items-center justify-center gap-2"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Back to Home
+            </Link>
+            <button
+              onClick={() => {
+                const baseGames = games.filter(g => g.tid.endsWith('000'));
+                if (baseGames.length === 0) return;
+                const randomIndex = Math.floor(Math.random() * baseGames.length);
+                const randomGame = baseGames[randomIndex];
+                updateSearchParams({ game: randomGame.tid });
+              }}
+              className="btn-orange flex-1 flex items-center justify-center gap-2"
+            >
+              <AnimatedDice className="w-4 h-4" />
+              Random Game
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!game) {
     return (
-      <div className="text-center py-12">
-        <p className="text-white/70">Game not found</p>
-        <Link to="/" className="text-orange-400 hover:text-orange-300 mt-4 inline-block">
-          ← Back to list
-        </Link>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="card-glass p-8 max-w-md w-full text-center space-y-6">
+          <div className="w-16 h-16 mx-auto bg-orange-500/20 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-white mb-2">Game Not Found</h2>
+            <p className="text-white/70 mb-4">
+              The game with TID <code className="bg-white/10 px-2 py-1 rounded text-sm">{tid}</code> could not be found in the database.
+            </p>
+            <p className="text-white/60 text-sm">
+              This might be because the game hasn't been added yet or the TID is incorrect.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link 
+              to="/" 
+              className="btn-orange flex-1 flex items-center justify-center gap-2"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Back to Home
+            </Link>
+            <button
+              onClick={() => {
+                const baseGames = games.filter(g => g.tid.endsWith('000'));
+                if (baseGames.length === 0) return;
+                const randomIndex = Math.floor(Math.random() * baseGames.length);
+                const randomGame = baseGames[randomIndex];
+                updateSearchParams({ game: randomGame.tid });
+              }}
+              className="btn-orange flex-1 flex items-center justify-center gap-2"
+            >
+              <AnimatedDice className="w-4 h-4" />
+              Random Game
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -150,33 +256,40 @@ export function GameDetails({ games, tid }: GameDetailsProps) {
                 stopOnInteraction: false,
                 stopOnMouseEnter: true,
               }),
-            ]}
+            ] as any}
           >
             <CarouselContent>
               {/* Banner as first slide */}
               <CarouselItem>
                 <div className="relative aspect-video">
-                  <img
-                    src={`https://api.nlib.cc/nx/${tid}/banner/720p`}
+                  <ImageWithFallback
+                    src={`https://api.nlib.cc/nx/${baseTid}/banner/720p`}
+                    fallbackSrc={`https://api.nlib.cc/nx/${baseTid}/icon/256/256`}
+                    fallbackSrcs={getBannerFallbackUrls(baseTid)}
                     alt={`${game.name} banner`}
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = `https://api.nlib.cc/nx/${game.tid}/icon/256/256`;
-                      (e.target as HTMLImageElement).className = "w-full h-full object-contain p-4 sm:p-8";
-                    }}
+                    fallbackClassName="w-full h-full object-contain p-4 sm:p-8"
+                    loading="eager"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                 </div>
               </CarouselItem>
               
               {/* Screenshots */}
-              {!loading && !error && details?.screens.screenshots.map((url, index) => (
+              {!loading && !error && details?.screens.screenshots.map((url: string, index: number) => (
                 <CarouselItem key={index}>
                   <div className="relative aspect-video">
-                    <img
+                    <LazyImage
                       src={url}
                       alt={`${game.name} screenshot ${index + 1}`}
                       className="w-full h-full object-cover"
+                      placeholder={
+                        <div className="flex items-center justify-center">
+                          <div className="w-8 h-8 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
+                        </div>
+                      }
+                      threshold={0.1}
+                      rootMargin="100px"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                   </div>
@@ -208,10 +321,12 @@ export function GameDetails({ games, tid }: GameDetailsProps) {
               <>
                 <div className="flex items-start gap-4">
                   <div className="relative shrink-0">
-                    <img
-                      src={`https://api.nlib.cc/nx/${tid}/icon/256/256`}
+                    <ImageWithFallback
+                      src={`https://api.nlib.cc/nx/${baseTid}/icon/256/256`}
+                      fallbackSrcs={getIconFallbackUrls(baseTid)}
                       alt="Game icon"
                       className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg bg-white/5"
+                      loading="eager"
                     />
                     <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-lg"></div>
                   </div>
@@ -257,7 +372,7 @@ export function GameDetails({ games, tid }: GameDetailsProps) {
               </div>
               
               {/* Updates Section */}
-              {relatedContent?.updates.length > 0 && (
+              {relatedContent?.updates && relatedContent.updates.length > 0 && (
                 <div className="space-y-3">
                   <h4 className="text-base sm:text-lg font-medium text-orange-400 mb-4">
                     Updates ({relatedContent.updates.length})
@@ -309,7 +424,7 @@ export function GameDetails({ games, tid }: GameDetailsProps) {
               )}
               
               {/* DLCs Section */}
-              {relatedContent?.dlcs.length > 0 && (
+              {relatedContent?.dlcs && relatedContent.dlcs.length > 0 && (
                 <div className="space-y-3">
                   <h4 className="text-base sm:text-lg font-medium text-orange-400 mb-4">
                     DLC Content ({relatedContent.dlcs.length})

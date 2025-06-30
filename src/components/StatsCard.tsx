@@ -1,11 +1,19 @@
 import { DivideIcon as LucideIcon } from 'lucide-react';
 
 interface StatsCardProps {
-  icon: LucideIcon;
+  icon: typeof LucideIcon;
   title: string;
   value: number | string;
 }
 
+/**
+ * StatsCard component displays a single statistic with icon, title, and value
+ * Used to show database metrics like game counts and total sizes
+ * 
+ * @param icon - Lucide icon component to display
+ * @param title - Title/label for the statistic
+ * @param value - Numeric or string value to display
+ */
 export function StatsCard({ icon: Icon, title, value }: StatsCardProps) {
   return (
     <div className="card-glass p-6">

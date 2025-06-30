@@ -1,5 +1,10 @@
 import type { RecentGame, GameDetails } from './types';
 
+/**
+ * Fetches recent game updates from the RSS feed
+ * 
+ * @returns Promise resolving to an array of recent game updates
+ */
 export async function fetchRecentUpdates(): Promise<RecentGame[]> {
   try {
     const response = await fetch('https://corsproxy.io/?url=https://data.ghostland.at/rss_feed_updates.xml');
@@ -13,6 +18,11 @@ export async function fetchRecentUpdates(): Promise<RecentGame[]> {
   }
 }
 
+/**
+ * Fetches recent DLC content from the RSS feed
+ * 
+ * @returns Promise resolving to an array of recent DLC content
+ */
 export async function fetchRecentDLCs(): Promise<RecentGame[]> {
   try {
     const response = await fetch('https://corsproxy.io/?url=https://data.ghostland.at/rss_feed_dlc.xml');
@@ -26,40 +36,11 @@ export async function fetchRecentDLCs(): Promise<RecentGame[]> {
   }
 }
 
-function parseRSSFeed(xmlText: string): RecentGame[] {
-  const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-  const items = xmlDoc.getElementsByTagName('item');
-  
-  const games: RecentGame[] = [];
-  
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    const title = item.getElementsByTagName('title')[0]?.textContent || '';
-    const description = item.getElementsByTagName('description')[0]?.textContent || '';
-    const pubDate = item.getElementsByTagName('pubDate')[0]?.textContent || '';
-    
-    const tidMatch = description.match(/Title ID: ([0-9A-Fa-f]+)/);
-    const sizeMatch = description.match(/Size: ([0-9.]+ [KMGT]iB)/i);
-    const versionMatch = description.match(/Version: v([0-9.]+)/);
-    const typeMatch = description.match(/Type: ([^\[]+)/);
-    const formatMatch = description.match(/Format: ([A-Z]+)/);
-    
-    games.push({
-      title: title.replace(/\[.*?\]/, '').trim(),
-      tid: tidMatch?.[1] || '',
-      size: sizeMatch?.[1] || '',
-      version: versionMatch?.[1] || '',
-      type: typeMatch?.[1]?.trim() || '',
-      format: formatMatch?.[1] || '',
-      date: new Date(pubDate),
-      iconUrl: `https://nx-missing.ghostland.at/icons/${tidMatch?.[1]}.jpg`
-    });
-  }
-  
-  return games.sort((a, b) => b.date.getTime() - a.date.getTime());
-}
-
+/**
+ * Fetches recent base games from the RSS feed
+ * 
+ * @returns Promise resolving to an array of recent base games
+ */
 export async function fetchRecentGames(): Promise<RecentGame[]> {
   try {
     const response = await fetch('https://corsproxy.io/?url=https://data.ghostland.at/rss_feed_base.xml');
@@ -73,6 +54,12 @@ export async function fetchRecentGames(): Promise<RecentGame[]> {
   }
 }
 
+/**
+ * Fetches detailed information for a specific game
+ * 
+ * @param tid - The Title ID of the game
+ * @returns Promise resolving to game details
+ */
 export async function fetchGameDetails(tid: string): Promise<GameDetails> {
   try {
     const response = await fetch(`https://api.nlib.cc/nx/${tid}/info`);
@@ -96,4 +83,46 @@ export async function fetchGameDetails(tid: string): Promise<GameDetails> {
     console.error('Error fetching game details:', error);
     throw error;
   }
+}
+
+/**
+ * Parses RSS feed XML and extracts game information
+ * 
+ * @param xmlText - The RSS feed XML content
+ * @returns Array of parsed game information
+ */
+function parseRSSFeed(xmlText: string): RecentGame[] {
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+  const items = xmlDoc.getElementsByTagName('item');
+  
+  const games: RecentGame[] = [];
+  
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    const title = item.getElementsByTagName('title')[0]?.textContent || '';
+    const description = item.getElementsByTagName('description')[0]?.textContent || '';
+    const pubDate = item.getElementsByTagName('pubDate')[0]?.textContent || '';
+    
+    // Extract information using regex patterns
+    const tidMatch = description.match(/Title ID: ([0-9A-Fa-f]+)/);
+    const sizeMatch = description.match(/Size: ([0-9.]+ [KMGT]iB)/i);
+    const versionMatch = description.match(/Version: v([0-9.]+)/);
+    const typeMatch = description.match(/Type: ([^\[]+)/);
+    const formatMatch = description.match(/Format: ([A-Z]+)/);
+    
+    games.push({
+      title: title.replace(/\[.*?\]/, '').trim(),
+      tid: tidMatch?.[1] || '',
+      size: sizeMatch?.[1] || '',
+      version: versionMatch?.[1] || '',
+      type: typeMatch?.[1]?.trim() || '',
+      format: formatMatch?.[1] || '',
+      date: new Date(pubDate),
+      iconUrl: `https://nx-missing.ghostland.at/icons/${tidMatch?.[1]}.jpg`
+    });
+  }
+  
+  // Sort by date, most recent first
+  return games.sort((a, b) => b.date.getTime() - a.date.getTime());
 }

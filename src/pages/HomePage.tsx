@@ -31,6 +31,31 @@ interface HomePageProps {
   onGameSelect: (tid: string) => void;
 }
 
+/**
+ * HomePage component displays the main landing page of the application
+ * Shows database statistics, recent content, and navigation options
+ * Handles loading states and provides access to different sections
+ * 
+ * @param loading - Whether the database is currently loading
+ * @param loadingText - Text to display during loading
+ * @param stage - Current loading stage (downloading/processing)
+ * @param progress - Download progress percentage
+ * @param processingProgress - Data processing progress percentage
+ * @param downloadSize - Size of data being downloaded
+ * @param games - Array of all available games
+ * @param recentGames - Recently added base games
+ * @param recentUpdates - Recently added updates
+ * @param recentDLCs - Recently added DLC content
+ * @param showAllUpdates - Whether to show all updates or just recent ones
+ * @param showAllDLCs - Whether to show all DLCs or just recent ones
+ * @param updatesSortConfig - Sorting configuration for updates table
+ * @param dlcsSortConfig - Sorting configuration for DLCs table
+ * @param onUpdatesSortChange - Callback for updates table sorting
+ * @param onDLCSortChange - Callback for DLCs table sorting
+ * @param onShowAllUpdatesChange - Callback to toggle updates display
+ * @param onShowAllDLCsChange - Callback to toggle DLCs display
+ * @param onGameSelect - Callback when a game is selected
+ */
 export function HomePage({
   loading,
   loadingText,
@@ -55,6 +80,7 @@ export function HomePage({
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
+        {/* Hero section with title and call-to-action buttons */}
         <header className="text-center space-y-6 py-16">
           <h1 className="text-4xl md:text-5xl font-bold">
             <span className="text-red-500">NX</span> <span className="text-gradient">Content Database</span>
@@ -108,6 +134,7 @@ export function HomePage({
           </div>
         </header>
 
+        {/* Loading state with progress indicators */}
         {loading ? (
           <div className="text-center py-24 space-y-4">
             <Loader2 className="w-10 h-10 text-orange-400 animate-spin mx-auto" />
@@ -140,6 +167,7 @@ export function HomePage({
             )}
           </div>
         ) : (
+          /* Database statistics cards */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
             <StatsCard
               icon={Package}
@@ -164,7 +192,7 @@ export function HomePage({
           </div>
         )}
 
-        {/* Recent Content */}
+        {/* Recently added content section */}
         <div className="space-y-6">
           <h2 className="text-2xl font-semibold text-orange-400">Recently Dumped</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
