@@ -1,7 +1,7 @@
 # NX Content Database
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Version](https://img.shields.io/badge/Version-4.1.5-blue)](https://github.com/ghost-land/NX-Content/releases)
+[![Version](https://img.shields.io/badge/Version-4.1.6-blue)](https://github.com/ghost-land/NX-Content/releases)
 [![GitHub issues](https://img.shields.io/github/issues/ghost-land/NX-Content)](https://github.com/ghost-land/NX-Content/issues)
 [![GitHub stars](https://img.shields.io/github/stars/ghost-land/NX-Content)](https://github.com/ghost-land/NX-Content/stargazers)
 

@@ -1,4 +1,5 @@
 import { Github } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 /**
  * Footer component displays the application footer with links and version info
@@ -12,6 +13,13 @@ export function Footer() {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
           {/* Legal and project links */}
           <div className="flex flex-wrap justify-center sm:justify-start items-center gap-3">
+            <Link
+              to="/?view=docs"
+              className="text-white/60 hover:text-white/90 transition-colors"
+            >
+              Documentation
+            </Link>
+            <span className="text-white/30">•</span>
             <a
               href="https://ghostland.at/dmca/"
               target="_blank"

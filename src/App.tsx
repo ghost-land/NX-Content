@@ -8,6 +8,7 @@ import { fetchRecentGames, fetchRecentUpdates, fetchRecentDLCs } from './lib/api
 import { GameDetails } from './pages/GameDetails';
 import { HomePage } from './pages/HomePage';
 import { ContentList } from './pages/ContentList';
+import { Documentation } from './pages/Documentation';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 /**
@@ -373,6 +374,8 @@ function App() {
             updateSearchParams={updateSearchParams}
             getRandomBaseGame={getRandomBaseGame}
           />
+        ) : searchParams.get('view') === 'docs' ? (
+          <Documentation />
         ) : (
           <HomePage
             loading={loading}

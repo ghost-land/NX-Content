@@ -51,8 +51,8 @@ export function GameDetails({ games, tid }: GameDetailsProps) {
   // Extract base TID for related content lookup
   const baseTid = getBaseTidForUpdate(tid);
 
-  // Validate TID format (16 hex characters)
-  const isValidTid = /^[0-9A-Fa-f]{16}$/.test(tid);
+  // Validate TID format (15 or 16 hex characters)
+  const isValidTid = /^[0-9A-Fa-f]{15,16}$/.test(tid);
 
   /**
    * Updates URL search parameters while preserving existing ones
@@ -125,7 +125,7 @@ export function GameDetails({ games, tid }: GameDetailsProps) {
               The Title ID <code className="bg-white/10 px-2 py-1 rounded text-sm">{tid}</code> is not in the correct format.
             </p>
             <p className="text-white/60 text-sm">
-              A valid Title ID should be 16 hexadecimal characters (0-9, A-F).
+              A valid Title ID should be 15 or 16 hexadecimal characters (0-9, A-F).
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
