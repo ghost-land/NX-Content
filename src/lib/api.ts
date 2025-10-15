@@ -62,7 +62,7 @@ export async function fetchRecentGames(): Promise<RecentGame[]> {
  */
 export async function fetchGameDetails(tid: string): Promise<GameDetails> {
   try {
-    const response = await fetch(`https://api.nlib.cc/nx/${tid}/info`);
+    const response = await fetch(`https://api.nlib.cc/nx/${tid}`);
     if (!response.ok) {
       throw new Error('Failed to fetch game details');
     }
