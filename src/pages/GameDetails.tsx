@@ -73,6 +73,11 @@ export function GameDetails({ games, tid }: GameDetailsProps) {
   const game = games.find(g => g.tid === tid);
   const relatedContent = game ? getRelatedContent(games, game.tid) : null;
 
+  const formatHours = (hours: number | null) => {
+    if (hours === null || Number.isNaN(hours)) return null;
+    return `${hours}h`;
+  };
+
   // Handle scroll behavior for back button text visibility
   useEffect(() => {
     const handleScroll = () => {
@@ -479,6 +484,41 @@ export function GameDetails({ games, tid }: GameDetailsProps) {
                   <div className="p-4 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] transition-colors border border-white/5">
                     <h4 className="text-sm font-medium text-orange-400 mb-1">Categories</h4>
                     <p className="text-white">{details.category.join(', ')}</p>
+                  </div>
+                )}
+                {details.igdb && (
+                  <div className="p-4 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] transition-colors border border-white/5 sm:col-span-2">
+                    <h4 className="text-sm font-medium text-orange-400 mb-3">IGDB</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-white/90">
+                      {details.igdb.rating > 0 && (
+                        <p>Rating: {details.igdb.rating.toFixed(1)} / 100 ({details.igdb.ratingCount} votes)</p>
+                      )}
+                      {details.igdb.aggregatedRating && details.igdb.aggregatedRating > 0 && (
+                        <p>Critic Score: {details.igdb.aggregatedRating.toFixed(1)} / 100 ({details.igdb.aggregatedRatingCount || 0} reviews)</p>
+                      )}
+                      {details.igdb.genres.length > 0 && (
+                        <p className="sm:col-span-2">Genres: {details.igdb.genres.join(', ')}</p>
+                      )}
+                      {details.igdb.platforms.length > 0 && (
+                        <p className="sm:col-span-2">Platforms: {details.igdb.platforms.join(', ')}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {details.howLongToBeat && (
+                  <div className="p-4 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] transition-colors border border-white/5 sm:col-span-2">
+                    <h4 className="text-sm font-medium text-orange-400 mb-3">HowLongToBeat</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+                      {formatHours(details.howLongToBeat.main) && (
+                        <p className="text-white/90">Main Story: {formatHours(details.howLongToBeat.main)}</p>
+                      )}
+                      {formatHours(details.howLongToBeat.extras) && (
+                        <p className="text-white/90">Main + Extras: {formatHours(details.howLongToBeat.extras)}</p>
+                      )}
+                      {formatHours(details.howLongToBeat.completionist) && (
+                        <p className="text-white/90">Completionist: {formatHours(details.howLongToBeat.completionist)}</p>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
