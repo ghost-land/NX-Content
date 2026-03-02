@@ -47,6 +47,22 @@ export interface RecentGame {
   iconUrl: string;
 }
 
+export interface IGDBData {
+  rating: number;
+  ratingCount: number;
+  aggregatedRating?: number;
+  aggregatedRatingCount?: number;
+  genres: string[];
+  platforms: string[];
+  websites: string[];
+}
+
+export interface HowLongToBeatData {
+  main: number | null;
+  extras: number | null;
+  completionist: number | null;
+}
+
 /**
  * Detailed game information from external API
  */
@@ -60,4 +76,6 @@ export interface GameDetails {
   screens: {
     screenshots: string[];
   };
+  igdb: IGDBData | null;
+  howLongToBeat: HowLongToBeatData | null;
 }

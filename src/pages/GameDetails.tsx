@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { useLocation, useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Download, FileUp, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useLocation, useSearchParams, Link } from 'react-router-dom';
+import { ChevronLeft, Download, FileUp, ExternalLink, ChevronDown, ChevronUp, Tags } from 'lucide-react';
 import Autoplay from 'embla-carousel-autoplay';
 import type { GameDetails } from '@/lib/types';
 import type { ProcessedGame } from '@/lib/types';
@@ -23,6 +23,20 @@ interface GameDetailsProps {
   games: ProcessedGame[];
   tid: string;
 }
+
+const formatReleaseDate = (releaseDate: string) => {
+  const parsedDate = new Date(releaseDate);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return releaseDate;
+  }
+
+  return parsedDate.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+
 
 /**
  * GameDetails component displays comprehensive information about a specific game
@@ -72,6 +86,11 @@ export function GameDetails({ games, tid }: GameDetailsProps) {
   // Find the target game and its related content
   const game = games.find(g => g.tid === tid);
   const relatedContent = game ? getRelatedContent(games, game.tid) : null;
+
+  const formatHours = (hours: number | null) => {
+    if (hours === null || Number.isNaN(hours)) return null;
+    return `${hours}h`;
+  };
 
   // Handle scroll behavior for back button text visibility
   useEffect(() => {
@@ -331,15 +350,42 @@ export function GameDetails({ games, tid }: GameDetailsProps) {
                     <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-lg"></div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white/80 mb-1">TID: {game.tid}</p>
-                    {details.publisher && (
-                      <p className="text-sm text-white/80 mb-1">Publisher: {details.publisher}</p>
-                    )}
-                    {details.releaseDate && (
-                      <p className="text-sm text-white/80">
-                        Release Date: {new Date(details.releaseDate).toLocaleDateString()}
-                      </p>
-                    )}
+                    <h3 className="text-xl sm:text-2xl font-semibold text-white/95 leading-tight mb-3">{game.name}</h3>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="text-xs px-2 py-1 rounded-full bg-orange-500/30 text-orange-100">{game.type.toUpperCase()}</span>
+                      {game.type === 'base' && game.version !== '0' && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-white/10 text-white/80">Version {game.version}</span>
+                      )}
+                      {game.type === 'update' && game.updateVersion && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-white/10 text-white/80">Update v{game.updateVersion}</span>
+                      )}
+                      {game.type === 'base' && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-white/10 text-white/80">{game.sizeFormatted}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                    <p className="text-xs uppercase tracking-wide text-white/50 mb-1">Title ID</p>
+                    <p className="text-sm text-white/90 font-mono break-all">{game.tid}</p>
+                  </div>
+                  {details.publisher && (
+                    <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                      <p className="text-xs uppercase tracking-wide text-white/50 mb-1">Publisher</p>
+                      <p className="text-sm text-white/90">{details.publisher}</p>
+                    </div>
+                  )}
+                  {details.releaseDate && (
+                    <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                      <p className="text-xs uppercase tracking-wide text-white/50 mb-1">Release Date</p>
+                      <p className="text-sm text-white/90">{formatReleaseDate(details.releaseDate)}</p>
+                    </div>
+                  )}
+                  <div className="p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                    <p className="text-xs uppercase tracking-wide text-white/50 mb-1">Base Title ID</p>
+                    <p className="text-sm text-white/90 font-mono">{baseTid}</p>
                   </div>
                 </div>
 
@@ -470,15 +516,62 @@ export function GameDetails({ games, tid }: GameDetailsProps) {
                   </div>
                 )}
                 {details.languages.length > 0 && (
-                  <div className="p-4 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] transition-colors border border-white/5">
-                    <h4 className="text-sm font-medium text-orange-400 mb-1">Languages</h4>
-                    <p className="text-white">{details.languages.join(', ').toUpperCase()}</p>
+                  <div className="p-4 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] transition-colors border border-white/5 sm:col-span-2">
+                    <h4 className="text-sm font-medium text-orange-400 mb-2">Languages</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {details.languages.map((language) => (
+                        <span key={language} className="text-xs px-2 py-1 rounded-full bg-white/10 text-white/85">
+                          {language.toUpperCase()}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {details.category.length > 0 && (
-                  <div className="p-4 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] transition-colors border border-white/5">
-                    <h4 className="text-sm font-medium text-orange-400 mb-1">Categories</h4>
-                    <p className="text-white">{details.category.join(', ')}</p>
+                  <div className="p-4 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] transition-colors border border-white/5 sm:col-span-2">
+                    <h4 className="text-sm font-medium text-orange-400 mb-2 flex items-center gap-2"><Tags className="h-4 w-4" />Categories</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {details.category.map((category) => (
+                        <span key={category} className="text-xs px-2 py-1 rounded-full bg-orange-500/20 text-orange-100">
+                          {category}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {details.igdb && (
+                  <div className="p-4 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] transition-colors border border-white/5 sm:col-span-2">
+                    <h4 className="text-sm font-medium text-orange-400 mb-3">IGDB</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-white/90">
+                      {details.igdb.rating > 0 && (
+                        <p>Rating: {details.igdb.rating.toFixed(1)} / 100 ({details.igdb.ratingCount} votes)</p>
+                      )}
+                      {details.igdb.aggregatedRating && details.igdb.aggregatedRating > 0 && (
+                        <p>Critic Score: {details.igdb.aggregatedRating.toFixed(1)} / 100 ({details.igdb.aggregatedRatingCount || 0} reviews)</p>
+                      )}
+                      {details.igdb.genres.length > 0 && (
+                        <p className="sm:col-span-2">Genres: {details.igdb.genres.join(', ')}</p>
+                      )}
+                      {details.igdb.platforms.length > 0 && (
+                        <p className="sm:col-span-2">Platforms: {details.igdb.platforms.join(', ')}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {details.howLongToBeat && (
+                  <div className="p-4 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] transition-colors border border-white/5 sm:col-span-2">
+                    <h4 className="text-sm font-medium text-orange-400 mb-3">HowLongToBeat</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+                      {formatHours(details.howLongToBeat.main) && (
+                        <p className="text-white/90">Main Story: {formatHours(details.howLongToBeat.main)}</p>
+                      )}
+                      {formatHours(details.howLongToBeat.extras) && (
+                        <p className="text-white/90">Main + Extras: {formatHours(details.howLongToBeat.extras)}</p>
+                      )}
+                      {formatHours(details.howLongToBeat.completionist) && (
+                        <p className="text-white/90">Completionist: {formatHours(details.howLongToBeat.completionist)}</p>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
