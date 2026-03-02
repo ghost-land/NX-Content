@@ -68,6 +68,9 @@ export async function fetchGameDetails(tid: string): Promise<GameDetails> {
     }
     const data = await response.json();
     
+    const igdb = data.igdb || null;
+    const hltb = data.howlongtobeat || data.howLongToBeat || null;
+
     return {
       publisher: data.publisher || '',
       releaseDate: data.releaseDate || '',
@@ -77,7 +80,21 @@ export async function fetchGameDetails(tid: string): Promise<GameDetails> {
       category: data.category || [],
       screens: {
         screenshots: data.screens?.screenshots || []
-      }
+      },
+      igdb: igdb ? {
+        rating: igdb.rating ?? 0,
+        ratingCount: igdb.ratingCount ?? 0,
+        aggregatedRating: igdb.aggregatedRating ?? undefined,
+        aggregatedRatingCount: igdb.aggregatedRatingCount ?? undefined,
+        genres: Array.isArray(igdb.genres) ? igdb.genres : [],
+        platforms: Array.isArray(igdb.platforms) ? igdb.platforms : [],
+        websites: Array.isArray(igdb.websites) ? igdb.websites : []
+      } : null,
+      howLongToBeat: hltb ? {
+        main: hltb.main ?? null,
+        extras: hltb.extras ?? null,
+        completionist: hltb.completionist ?? null
+      } : null
     };
   } catch (error) {
     console.error('Error fetching game details:', error);
