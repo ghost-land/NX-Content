@@ -1,63 +1,26 @@
-/**
- * Raw game data structure from JSON database
- */
-export interface GameData {
-  "Game Name": string;
-  Version: string;
-  "Update Version"?: number;
-  Size: number;
+// src/lib/types.ts
+
+// TypeScript types for extended game metadata
+
+export interface GameMetadata {
+    id: number;
+    title: string;
+    releaseDate: string;
+    platforms: string[];
+    genres: string[];
+    description: string;
+    igdb: IGDBData;
+    howLongToBeat: HowLongToBeatData;
 }
 
-/**
- * Complete games database structure
- */
-export interface GamesData {
-  [tid: string]: GameData;
-}
-
-/**
- * Content type classification
- */
-export type ContentType = 'base' | 'update' | 'dlc';
-
-/**
- * Processed game information with formatted data
- */
-export interface ProcessedGame {
-  tid: string;
-  name: string;
-  version: string;
-  updateVersion?: number;
-  size: number;
-  type: ContentType;
-  sizeFormatted: string;
-}
-
-/**
- * Recent content information from RSS feeds
- */
-export interface RecentGame {
-  title: string;
-  tid: string;
-  size: string;
-  version: string;
-  type: string;
-  format: string;
-  date: Date;
-  iconUrl: string;
-}
-
-/**
- * Detailed game information from external API
- */
-export interface GameDetails {
-  publisher: string;
-  releaseDate: string;
-  description: string;
-  numberOfPlayers: string;
-  languages: string[];
-  category: string[];
-  screens: {
+export interface IGDBData {
+    rating: number;
+    ratingCount: number;
     screenshots: string[];
-  };
+}
+
+export interface HowLongToBeatData {
+    main: number; // Main story hours
+    extras: number; // Extras hours
+    completionist: number; // Completionist hours
 }
