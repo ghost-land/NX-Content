@@ -183,8 +183,8 @@ function App() {
         
         // Fetch both data sources in parallel
         const [jsonResponse, txtResponse] = await Promise.all([
-          fetch('https://nx-missing.ghostland.at/data/working.json'),
-          fetch('https://nx-missing.ghostland.at/data/working.txt')
+          fetch('https://data.ghostland.at/nx/owned.json'),
+          fetch('https://data.ghostland.at/nx/owned.txt')
         ]);
 
         const jsonData = await jsonResponse.json();
