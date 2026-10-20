@@ -40,15 +40,21 @@ export function RecentGameCard({ game, onClick }: RecentGameCardProps) {
           <div>
             <h3 className="font-medium text-lg text-white mb-2">{game.title}</h3>
             <div className="flex flex-wrap gap-2">
-              <span className="text-xs px-2 py-1 rounded-full bg-orange-500/20 text-orange-300">
-                {game.size}
-              </span>
-              <span className="text-xs px-2 py-1 rounded-full bg-orange-500/20 text-orange-300">
-                {game.version}
-              </span>
-              <span className="text-xs px-2 py-1 rounded-full bg-orange-500/20 text-orange-300">
-                {game.format}
-              </span>
+              {game.size && (
+                <span className="text-xs px-2 py-1 rounded-full bg-orange-500/20 text-orange-300">
+                  {game.size}
+                </span>
+              )}
+              {game.version && (
+                <span className="text-xs px-2 py-1 rounded-full bg-orange-500/20 text-orange-300">
+                  {game.version}
+                </span>
+              )}
+              {game.format && (
+                <span className="text-xs px-2 py-1 rounded-full bg-orange-500/20 text-orange-300">
+                  {game.format}
+                </span>
+              )}
             </div>
             <p className="text-sm text-white/60 mt-2">
               Added {game.date.toLocaleDateString()}

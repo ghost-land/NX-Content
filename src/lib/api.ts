@@ -1,7 +1,43 @@
 import type { RecentGame, GameDetails } from './types';
 
-const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
-const CACHE_PREFIX = 'nx-rss-cache:';
+const CACHE_TTL_MS = 1 * 60 * 60 * 1000; // 1 hour
+// Bumped when RSS parse shape changes so stale localStorage entries are ignored
+const CACHE_PREFIX = 'nx-rss-cache-v2:';
+
+const CONTENT_NS = 'http://purl.org/rss/1.0/modules/content/';
+
+/**
+ * Decodes HTML entities (e.g. &#39; → '). Safe for RSS title/metadata text only.
+ */
+function decodeHtmlEntities(text: string): string {
+  const textarea = document.createElement('textarea');
+  textarea.innerHTML = text;
+  return textarea.value;
+}
+
+/**
+ * Returns the RSS field that holds Title ID / size / version metadata.
+ * Newer feeds put that in content:encoded; older ones keep it in description.
+ */
+function getItemMetadataText(item: Element): string {
+  const contentEncoded =
+    item.getElementsByTagNameNS(CONTENT_NS, 'encoded')[0]?.textContent ||
+    item.getElementsByTagName('encoded')[0]?.textContent ||
+    '';
+  const description = item.getElementsByTagName('description')[0]?.textContent || '';
+
+  if (/Title ID:/i.test(contentEncoded)) return contentEncoded;
+  if (/Title ID:/i.test(description)) return description;
+  return contentEncoded || description;
+}
+
+/**
+ * Fallback TID from nlib icon link when metadata block is missing.
+ */
+function extractTidFromLink(item: Element): string {
+  const link = item.getElementsByTagName('link')[0]?.textContent || '';
+  return link.match(/\/nx\/([0-9A-Fa-f]{16})/i)?.[1]?.toUpperCase() || '';
+}
 
 const FEED_URLS = {
   updates: 'https://data.ghostland.at/rss_feed_updates.xml',
@@ -58,7 +94,7 @@ function setCachedFeed(url: string, games: RecentGame[]): void {
 }
 
 /**
- * Fetches an RSS feed, preferring a client-side cache (max 6h) to avoid spam.
+ * Fetches an RSS feed, preferring a client-side cache (max 1h) to avoid spam.
  */
 async function fetchRSSFeed(url: string): Promise<RecentGame[]> {
   const cached = getCachedFeed(url);
@@ -162,26 +198,28 @@ function parseRSSFeed(xmlText: string): RecentGame[] {
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
-    const title = item.getElementsByTagName('title')[0]?.textContent || '';
-    const description = item.getElementsByTagName('description')[0]?.textContent || '';
+    const rawTitle = item.getElementsByTagName('title')[0]?.textContent || '';
+    const metadata = getItemMetadataText(item);
     const pubDate = item.getElementsByTagName('pubDate')[0]?.textContent || '';
 
-    // Extract information using regex patterns
-    const tidMatch = description.match(/Title ID: ([0-9A-Fa-f]+)/);
-    const sizeMatch = description.match(/Size: ([0-9.]+ [KMGT]iB)/i);
-    const versionMatch = description.match(/Version: v([0-9.]+)/);
-    const typeMatch = description.match(/Type: ([^\[]+)/);
-    const formatMatch = description.match(/Format: ([A-Z]+)/);
+    const tidMatch = metadata.match(/Title ID:\s*([0-9A-Fa-f]+)/i);
+    const sizeMatch = metadata.match(/Size:\s*([0-9.]+ [KMGT]iB)/i);
+    const versionMatch = metadata.match(/Version:\s*v([0-9.]+)/i);
+    const typeMatch = metadata.match(/Type:\s*([^\n<\[]+)/i);
+    const formatMatch = metadata.match(/Format:\s*([A-Z]+)/i);
+
+    const tid = (tidMatch?.[1] || extractTidFromLink(item)).toUpperCase();
+    if (!tid) continue;
 
     games.push({
-      title: title.replace(/\[.*?\]/, '').trim(),
-      tid: tidMatch?.[1] || '',
+      title: decodeHtmlEntities(rawTitle.replace(/\[.*?\]/, '').trim()),
+      tid,
       size: sizeMatch?.[1] || '',
       version: versionMatch?.[1] || '',
       type: typeMatch?.[1]?.trim() || '',
       format: formatMatch?.[1] || '',
       date: new Date(pubDate),
-      iconUrl: `https://api.nlib.cc/nx/${tidMatch?.[1]}/icon/256/256`
+      iconUrl: `https://api.nlib.cc/nx/${tid}/icon/256/256`,
     });
   }
 
